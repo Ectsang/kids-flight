@@ -1,0 +1,26 @@
+{
+  "name": "Sky Pilot",
+  "short_name": "Sky Pilot",
+  "description": "Tap to fly through the sky and collect stars!",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#87CEEB",
+  "theme_color": "#87CEEB",
+  "categories": ["games", "kids"],
+  "icons": [
+    {
+      "src": "../animal-tap-parade/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../animal-tap-parade/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "en-US"
+}

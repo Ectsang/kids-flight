@@ -1,0 +1,231 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial Rounded MT Bold', 'Nunito', system-ui, sans-serif;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  background: #87CEEB;
+}
+
+.screen {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* START SCREEN */
+#startScreen {
+  background: linear-gradient(180deg, #87CEEB 0%, #B8E4F0 40%, #FFF9C4 80%, #FFE0B2 100%);
+  justify-content: center;
+  align-items: center;
+}
+
+.start-content {
+  text-align: center;
+  padding: 20px;
+}
+
+.start-title {
+  font-size: clamp(3rem, 10vw, 5rem);
+  color: #fff;
+  text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+  margin-bottom: 16px;
+}
+
+.start-plane {
+  font-size: 6rem;
+  animation: floatPlane 2s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes floatPlane {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+.start-hint {
+  font-size: 1.5rem;
+  color: #555;
+  margin-bottom: 24px;
+}
+
+.vehicle-picker {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.vehicle-option {
+  width: 70px;
+  height: 70px;
+  background: #fff;
+  border: 4px solid #333;
+  border-radius: 18px;
+  font-size: 2.5rem;
+  cursor: pointer;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+  transition: transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vehicle-option:active {
+  transform: scale(0.9);
+}
+
+.vehicle-option.selected {
+  border-color: #FFD93D;
+  background: #FFF9C4;
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(255,217,61,0.6);
+}
+
+.start-btn {
+  background: #4ECDC4;
+  border: 4px solid #333;
+  border-radius: 50px;
+  padding: 18px 48px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+  transition: transform 0.1s;
+  font-family: inherit;
+}
+
+.start-btn:active {
+  transform: scale(0.95);
+}
+
+/* GAME SCREEN */
+#gameScreen {
+  background: #87CEEB;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hud {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+}
+
+.hud-item {
+  background: rgba(255,255,255,0.9);
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+}
+
+.pause-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 52px;
+  height: 52px;
+  background: rgba(255,255,255,0.9);
+  border: 3px solid #333;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pause-btn:active {
+  transform: scale(0.9);
+}
+
+/* OVERLAY */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.overlay.active {
+  display: flex;
+}
+
+.overlay-content {
+  background: #fff;
+  border-radius: 30px;
+  padding: 40px;
+  text-align: center;
+  border: 5px solid #333;
+  box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.overlay-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.overlay-btn {
+  display: block;
+  width: 100%;
+  background: #4ECDC4;
+  border: 4px solid #333;
+  border-radius: 50px;
+  padding: 16px 36px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+  margin-bottom: 12px;
+  font-family: inherit;
+}
+
+.overlay-btn.secondary {
+  background: #FF9F43;
+}
+
+.overlay-btn:active {
+  transform: scale(0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start-plane { animation: none; }
+}
