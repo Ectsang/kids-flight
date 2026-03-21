@@ -127,8 +127,9 @@ class AnimalTapParade {
     utterance.volume = 1;
     
     const voices = this.synth.getVoices();
-    const preferredVoice = voices.find(v => v.lang.includes('en') && v.name.includes('Female')) || 
-                          voices.find(v => v.lang.includes('en')) || voices[0];
+    const preferredVoice = voices.find(v => v.name.includes('Samantha')) ||
+                          voices.find(v => v.lang.startsWith('en') && v.name.includes('Female')) ||
+                          voices.find(v => v.lang.startsWith('en')) || voices[0];
     if (preferredVoice) utterance.voice = preferredVoice;
     
     this.synth.speak(utterance);

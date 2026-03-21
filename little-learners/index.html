@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#6C5CE7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Little Learners</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- HOME SCREEN -->
+    <div class="screen active" id="homeScreen">
+      <header class="header">
+        <h1 class="title">Little Learners</h1>
+      </header>
+      <div class="worlds-grid">
+        <button class="world-card" data-world="shapes" style="--card-color: #FF6B6B;">
+          <div class="world-emoji">🔷🔺🟢</div>
+          <div class="world-name">Shapes</div>
+        </button>
+        <button class="world-card" data-world="letters" style="--card-color: #4ECDC4;">
+          <div class="world-emoji">🅰️🐊</div>
+          <div class="world-name">Letters</div>
+        </button>
+        <button class="world-card" data-world="colors" style="--card-color: #FFD93D;">
+          <div class="world-emoji">🎨🌈</div>
+          <div class="world-name">Colors</div>
+        </button>
+        <button class="world-card" data-world="numbers" style="--card-color: #A8E6CF;">
+          <div class="world-emoji">🔢🐛</div>
+          <div class="world-name">Numbers</div>
+        </button>
+        <button class="world-card" data-world="patterns" style="--card-color: #DDA0DD;">
+          <div class="world-emoji">🚂🔴🔵</div>
+          <div class="world-name">Patterns</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div class="screen" id="gameScreen">
+      <header class="header">
+        <button class="back-btn" id="backBtn">⬅️</button>
+        <h2 class="title" id="gameTitle">Shapes</h2>
+        <div class="stars" id="starsDisplay">⭐ 0</div>
+      </header>
+      <div class="prompt-area">
+        <p class="prompt-text" id="promptText"></p>
+      </div>
+      <div class="game-area" id="gameArea"></div>
+    </div>
+  </div>
+
+  <div class="confetti-container" id="confettiContainer"></div>
+  <div class="celebration-overlay" id="celebrationOverlay">
+    <div class="celebration-content">
+      <div class="celebration-emoji" id="celebrationEmoji">⭐</div>
+      <div class="celebration-text" id="celebrationText">Great Job!</div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

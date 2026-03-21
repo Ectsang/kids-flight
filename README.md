@@ -9,6 +9,7 @@ Offline-first games for kids to play on flights. Each game is a standalone PWA t
 | Game | Ages | Description |
 |------|------|-------------|
 | [Animal Tap Parade](animal-tap-parade/) | 2-4 | Tap animals to hear sounds, see animations, and play matching games |
+| [Little Learners](little-learners/) | 2-5 | Five learning worlds: shapes, letters, colors, numbers, and patterns |
 
 ## Features
 
