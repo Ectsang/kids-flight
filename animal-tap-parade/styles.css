@@ -16,7 +16,7 @@
 }
 
 body {
-  font-family: 'Comic Sans MS', 'Chalkboard', cursive, sans-serif;
+  font-family: 'Arial Rounded MT Bold', 'Nunito', system-ui, sans-serif;
   background: linear-gradient(135deg, #FFD93D 0%, #FF9F43 100%);
   min-height: 100vh;
   overflow-x: hidden;
