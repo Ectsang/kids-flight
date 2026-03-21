@@ -61,14 +61,41 @@ const COLOR_MIXES = [
 const CRITTERS = ['🐛', '🐞', '🦋', '🐝', '🐠', '🐙', '🦀', '🐸', '🐥', '🌟'];
 
 const PATTERN_SETS = [
-  { items: ['🔴', '🔵'], type: 'AB' },
-  { items: ['🟡', '🟢', '🔴'], type: 'ABC' },
-  { items: ['⭐', '🌙'], type: 'AB' },
-  { items: ['🐱', '🐶'], type: 'AB' },
-  { items: ['🍎', '🍌', '🍎'], type: 'ABA' },
-  { items: ['❤️', '💙', '💚'], type: 'ABC' },
-  { items: ['🔴', '🔴', '🔵'], type: 'AAB' },
-  { items: ['🌸', '🌺'], type: 'AB' },
+  // AB patterns
+  { items: ['🔴', '🔵'] },
+  { items: ['⭐', '🌙'] },
+  { items: ['🐱', '🐶'] },
+  { items: ['🌸', '🌺'] },
+  { items: ['🍎', '🍊'] },
+  { items: ['☀️', '🌧️'] },
+  { items: ['🐟', '🐙'] },
+  { items: ['🎈', '🎁'] },
+  // AAB patterns
+  { items: ['🔴', '🔴', '🔵'] },
+  { items: ['🐸', '🐸', '🦋'] },
+  { items: ['⭐', '⭐', '🌙'] },
+  { items: ['🍓', '🍓', '🍌'] },
+  // ABB patterns
+  { items: ['🔵', '🟡', '🟡'] },
+  { items: ['🐝', '🌸', '🌸'] },
+  { items: ['🌈', '☁️', '☁️'] },
+  // ABC patterns
+  { items: ['❤️', '💙', '💚'] },
+  { items: ['🟡', '🟢', '🔴'] },
+  { items: ['🐱', '🐶', '🐰'] },
+  { items: ['🍎', '🍌', '🍇'] },
+  { items: ['🚗', '🚌', '🚀'] },
+  // ABA patterns
+  { items: ['🍎', '🍌', '🍎'] },
+  { items: ['🌺', '🌻', '🌺'] },
+  { items: ['🐻', '🐼', '🐻'] },
+  // AABB patterns
+  { items: ['🔴', '🔴', '🔵', '🔵'] },
+  { items: ['🌸', '🌸', '🌺', '🌺'] },
+  { items: ['🐛', '🐛', '🦋', '🦋'] },
+  // ABAC patterns
+  { items: ['⭐', '🌙', '⭐', '❤️'] },
+  { items: ['🐱', '🐶', '🐱', '🐰'] },
 ];
 
 const BG_GRADIENTS = {
@@ -102,6 +129,7 @@ class LittleLearners {
     this.currentCritter = '';
     this.currentLetterIndex = 0;
     this.busy = false;
+    this.history = { shapes: [], letters: [], colors: [], numbers: [], patterns: [] };
 
     this.init();
   }
@@ -160,7 +188,6 @@ class LittleLearners {
     this.homeScreen.classList.add('active');
     document.body.style.background = 'linear-gradient(135deg, #6C5CE7 0%, #A29BFE 100%)';
     this.currentWorld = null;
-    this.currentLetterIndex = 0;
   }
 
   loadRound() {
@@ -179,8 +206,12 @@ class LittleLearners {
   // ─── SHAPES ──────────────────────────────────────────────────
 
   loadShapes() {
-    const shuffled = shuffle([...SHAPES]);
+    const available = SHAPES.filter(s => !this.history.shapes.includes(s.name));
+    if (available.length === 0) this.history.shapes = [];
+    const pool = available.length > 0 ? available : SHAPES;
+    const shuffled = shuffle([...pool]);
     const target = shuffled[0];
+    this.history.shapes.push(target.name);
     const options = shuffle(shuffled.slice(0, 4));
 
     this.promptText.textContent = `Find the ${target.name}!`;
@@ -274,7 +305,11 @@ class LittleLearners {
   // ─── COLORS ──────────────────────────────────────────────────
 
   loadColors() {
-    const mix = shuffle([...COLOR_MIXES])[0];
+    const available = COLOR_MIXES.filter(m => !this.history.colors.includes(m.result + m.a + m.b));
+    if (available.length === 0) this.history.colors = [];
+    const pool = available.length > 0 ? available : COLOR_MIXES;
+    const mix = shuffle([...pool])[0];
+    this.history.colors.push(mix.result + mix.a + mix.b);
     const colorA = COLORS.find(c => c.name === mix.a);
     const colorB = COLORS.find(c => c.name === mix.b);
     this.selectedColors = [];
@@ -366,9 +401,15 @@ class LittleLearners {
   // ─── NUMBERS ─────────────────────────────────────────────────
 
   loadNumbers() {
-    this.numberTarget = Math.floor(Math.random() * 5) + 1;
+    let key;
+    do {
+      this.numberTarget = Math.floor(Math.random() * 5) + 1;
+      this.currentCritter = CRITTERS[Math.floor(Math.random() * CRITTERS.length)];
+      key = this.numberTarget + this.currentCritter;
+    } while (this.history.numbers.includes(key) && this.history.numbers.length < 50);
+    this.history.numbers.push(key);
+    if (this.history.numbers.length >= 50) this.history.numbers = [];
     this.numberCount = 0;
-    this.currentCritter = CRITTERS[Math.floor(Math.random() * CRITTERS.length)];
 
     this.promptText.textContent = `Tap to add ${this.numberTarget} critters!`;
     this.speak(`Tap to add ${this.numberTarget} critters`);
@@ -415,17 +456,30 @@ class LittleLearners {
   // ─── PATTERNS ────────────────────────────────────────────────
 
   loadPatterns() {
-    const patternSet = shuffle([...PATTERN_SETS])[0];
+    const available = PATTERN_SETS.filter((_, i) => !this.history.patterns.includes(i));
+    if (available.length === 0) this.history.patterns = [];
+    const pool = available.length > 0 ? available : PATTERN_SETS;
+    const patternSet = shuffle([...pool])[0];
+    const patternIdx = PATTERN_SETS.indexOf(patternSet);
+    this.history.patterns.push(patternIdx);
+
     const patternLen = patternSet.items.length;
-    const repeatCount = 2 + Math.floor(Math.random() * 2);
+    // Show exactly 2 full cycles (max 8 items) so it fits on screen
+    const maxVisible = 8;
+    const repeatCount = Math.min(2, Math.floor(maxVisible / patternLen));
     const sequence = [];
     for (let i = 0; i < repeatCount; i++) {
       sequence.push(...patternSet.items);
     }
-    // Add one more incomplete cycle to create the mystery
-    const extraItems = Math.floor(Math.random() * (patternLen - 1));
-    for (let i = 0; i <= extraItems; i++) {
-      sequence.push(patternSet.items[i]);
+    // Add partial cycle only if total stays under max
+    if (sequence.length + 1 <= maxVisible) {
+      const extraItems = Math.min(
+        Math.floor(Math.random() * (patternLen - 1)),
+        maxVisible - sequence.length - 1
+      );
+      for (let i = 0; i <= extraItems; i++) {
+        if (sequence.length < maxVisible) sequence.push(patternSet.items[i]);
+      }
     }
 
     const answerIndex = sequence.length;
