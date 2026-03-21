@@ -33,9 +33,10 @@ const TERRAIN_PROFILES = [
 ];
 
 const GRAVITY = 0.28;
-const BOUNCE_DAMPING = 0.55;
-const FRICTION = 0.96;
+const BOUNCE_DAMPING = 0.65;
+const FRICTION = 0.97;
 const MATCH_MIN = 3;
+const SETTLE_SPEED = 0.4;
 
 // ─── GAME ────────────────────────────────────────────────────────
 
@@ -195,6 +196,12 @@ class BubblePopTower {
 
     // Terrain
     this.generateTerrain();
+    this.turnsSinceTerrain = 0;
+    this.nextTerrainShift = 4 + Math.floor(Math.random() * 5); // 4-8 turns
+    this.terrainShifting = false;
+    this.terrainShiftTimer = 0;
+    this.oldTerrainHeights = null;
+    this.newTerrainHeights = null;
 
     // Earthquake
     this.quakeTimer = 0;
@@ -381,24 +388,30 @@ class BubblePopTower {
           const nx = dx / dist;
           const ny = dy / dist;
 
-          // Push apart (50/50 split)
-          a.x -= nx * overlap * 0.5;
-          a.y -= ny * overlap * 0.5;
-          b.x += nx * overlap * 0.5;
-          b.y += ny * overlap * 0.5;
+          // Push apart firmly (no overlap allowed)
+          a.x -= nx * overlap * 0.55;
+          a.y -= ny * overlap * 0.55;
+          b.x += nx * overlap * 0.55;
+          b.y += ny * overlap * 0.55;
 
           // Relative velocity
           const dvx = (b.vx || 0) - (a.vx || 0);
           const dvy = (b.vy || 0) - (a.vy || 0);
           const dvDot = dvx * nx + dvy * ny;
 
-          // Only resolve if approaching
+          // Resolve collision - high restitution, no stickiness
           if (dvDot < 0) {
-            const impulse = dvDot * (1 + BOUNCE_DAMPING) * 0.5;
+            const restitution = 0.75;
+            const impulse = dvDot * (1 + restitution) * 0.5;
             a.vx = (a.vx || 0) + impulse * nx;
             a.vy = (a.vy || 0) + impulse * ny;
             b.vx = (b.vx || 0) - impulse * nx;
             b.vy = (b.vy || 0) - impulse * ny;
+
+            // Add slight lateral scatter so balls don't stack perfectly
+            const scatter = 0.3;
+            a.vx += (Math.random() - 0.5) * scatter;
+            b.vx += (Math.random() - 0.5) * scatter;
           }
         }
       }
@@ -415,27 +428,47 @@ class BubblePopTower {
         return d < r * 2.2 && f.y < b.y;
       });
 
-      if (speed < 0.8 && (onGround || onBubble)) {
+      if (speed < SETTLE_SPEED && (onGround || onBubble)) {
         this.settleBubble(f);
       }
     }
 
-    // Check all settled bubbles are still at rest, mark moving ones
-    let anyMoving = false;
+    // Settled bubbles damping - only freeze when truly still
     for (const b of this.bubbles) {
       const speed = Math.sqrt((b.vx || 0) ** 2 + (b.vy || 0) ** 2);
-      if (speed < 0.3) {
+      if (speed < SETTLE_SPEED * 0.5) {
         b.vx = 0;
         b.vy = 0;
-      } else {
-        anyMoving = true;
       }
-      // Visual scale bounce on impact
       if (b.settleTimer > 0) {
         b.settleTimer -= dt;
         b.scale = 1 + Math.sin(b.settleTimer * 0.5) * 0.08;
       } else {
         b.scale = 1;
+      }
+    }
+
+    // Terrain shifting
+    if (this.terrainShifting) {
+      this.terrainShiftTimer += dt * 0.03;
+      if (this.terrainShiftTimer >= 1) {
+        // Shift complete
+        this.terrainShifting = false;
+        this.terrainShiftTimer = 0;
+        this.terrainHeights = this.newTerrainHeights;
+        this.oldTerrainHeights = null;
+        this.newTerrainHeights = null;
+        // Give all bubbles a kick so they resettle on new terrain
+        for (const b of this.bubbles) {
+          b.vy = (b.vy || 0) + 2;
+        }
+      } else {
+        // Interpolate terrain during shift
+        const t = this.terrainShiftTimer;
+        const smooth = t * t * (3 - 2 * t); // smoothstep
+        for (let x = 0; x <= this.W; x++) {
+          this.terrainHeights[x] = this.oldTerrainHeights[x] + (this.newTerrainHeights[x] - this.oldTerrainHeights[x]) * smooth;
+        }
       }
     }
 
@@ -500,7 +533,7 @@ class BubblePopTower {
     const bubble = {
       x: f.x,
       y: f.y,
-      vx: (f.vx || 0) * 0.3, // keep some residual momentum
+      vx: (f.vx || 0) * 0.3,
       vy: (f.vy || 0) * 0.3,
       radius: this.bubbleRadius,
       color: f.color,
@@ -512,12 +545,44 @@ class BubblePopTower {
     this.bubbles.push(bubble);
     this.falling = null;
 
+    // Terrain shift check
+    this.turnsSinceTerrain++;
+    if (this.turnsSinceTerrain >= this.nextTerrainShift && !this.terrainShifting) {
+      this.shiftTerrain();
+    }
+
     // Check for matches after physics settle a bit
     setTimeout(() => {
       if (!this.running) return;
       this.combo = 0;
       this.processMatches(bubble);
-    }, 250);
+    }, 350);
+  }
+
+  shiftTerrain() {
+    this.turnsSinceTerrain = 0;
+    this.nextTerrainShift = 4 + Math.floor(Math.random() * 5); // 4-8
+
+    // Pick a different terrain
+    const currentName = this.terrainProfile.name;
+    const others = TERRAIN_PROFILES.filter(t => t.name !== currentName);
+    this.terrainProfile = others[Math.floor(Math.random() * others.length)];
+
+    // Set up interpolation
+    this.oldTerrainHeights = new Float32Array(this.terrainHeights);
+    this.newTerrainHeights = new Float32Array(Math.ceil(this.W) + 1);
+    for (let x = 0; x <= this.W; x++) {
+      this.newTerrainHeights[x] = this.terrainProfile.gen(x, this.W, this.H);
+    }
+
+    this.terrainShifting = true;
+    this.terrainShiftTimer = 0;
+
+    this.playTone(150, 0.3, 'sawtooth');
+    this.floatingTexts.push({
+      x: this.W / 2, y: this.H * 0.4,
+      text: `⛰️ ${this.terrainProfile.name}!`, combo: '', life: 1.5,
+    });
   }
 
   processMatches(trigger) {
