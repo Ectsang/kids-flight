@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Bubble Pop Tower</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- START SCREEN -->
+  <div class="screen active" id="startScreen">
+    <div class="start-content">
+      <h1 class="start-title">Bubble Pop Tower</h1>
+      <div class="start-emoji">🫧🗼</div>
+      <p class="start-hint">Tap to drop bubbles. Match 3 to pop!</p>
+      <div class="difficulty-picker">
+        <button class="diff-btn selected" data-diff="easy">
+          <span class="diff-icon">😊</span>
+          <span class="diff-label">Easy</span>
+        </button>
+        <button class="diff-btn" data-diff="medium">
+          <span class="diff-icon">😎</span>
+          <span class="diff-label">Medium</span>
+        </button>
+        <button class="diff-btn" data-diff="hard">
+          <span class="diff-icon">🔥</span>
+          <span class="diff-label">Hard</span>
+        </button>
+      </div>
+      <button class="start-btn" id="startBtn">Start!</button>
+      <a class="menu-link" href="../">🏠 Game Menu</a>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="gameScreen">
+    <canvas id="gameCanvas"></canvas>
+    <div class="hud">
+      <div class="hud-item" id="hudScore">Score: 0</div>
+      <div class="hud-item" id="hudCombo"></div>
+    </div>
+    <div class="next-bubble" id="nextBubble"></div>
+    <button class="pause-btn" id="pauseBtn">⏸️</button>
+  </div>
+
+  <!-- PAUSE OVERLAY -->
+  <div class="overlay" id="pauseOverlay">
+    <div class="overlay-content">
+      <h2>Paused</h2>
+      <button class="overlay-btn" id="resumeBtn">▶️ Resume</button>
+      <button class="overlay-btn secondary" id="homeBtn">🏠 Home</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER OVERLAY -->
+  <div class="overlay" id="gameOverOverlay">
+    <div class="overlay-content">
+      <h2 id="goTitle">Game Over!</h2>
+      <div class="go-stats">
+        <p class="go-stat">🏆 Score: <span id="goScore">0</span></p>
+        <p class="go-stat">💥 Best Combo: <span id="goCombo">0</span>x</p>
+        <p class="go-stat">🫧 Popped: <span id="goPopped">0</span></p>
+      </div>
+      <button class="overlay-btn" id="retryBtn">🔄 Play Again!</button>
+      <button class="overlay-btn secondary" id="goHomeBtn">🏠 Home</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

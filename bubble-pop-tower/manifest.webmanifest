@@ -1,0 +1,26 @@
+{
+  "name": "Bubble Pop Tower",
+  "short_name": "Bubbles",
+  "description": "Drop and match bubbles in this physics-based puzzle game!",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "categories": ["games", "kids", "puzzle"],
+  "icons": [
+    {
+      "src": "../animal-tap-parade/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../animal-tap-parade/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "en-US"
+}

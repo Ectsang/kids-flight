@@ -1,0 +1,305 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial Rounded MT Bold', 'Nunito', system-ui, sans-serif;
+  background: #1a1a2e;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.screen {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* START SCREEN */
+#startScreen {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  justify-content: center;
+  align-items: center;
+}
+
+.start-content {
+  text-align: center;
+  padding: 20px;
+}
+
+.start-title {
+  font-size: clamp(2.2rem, 8vw, 4rem);
+  color: #fff;
+  text-shadow: 0 0 20px rgba(233,69,96,0.5), 3px 3px 0px rgba(0,0,0,0.3);
+  margin-bottom: 12px;
+}
+
+.start-emoji {
+  font-size: 5rem;
+  margin-bottom: 12px;
+  animation: floatBubble 2.5s ease-in-out infinite;
+}
+
+@keyframes floatBubble {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-15px) scale(1.05); }
+}
+
+.start-hint {
+  font-size: 1.3rem;
+  color: #aaa;
+  margin-bottom: 24px;
+}
+
+.difficulty-picker {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.diff-btn {
+  background: rgba(255,255,255,0.1);
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 18px;
+  padding: 14px 20px;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.1s;
+  font-family: inherit;
+}
+
+.diff-btn:active {
+  transform: scale(0.9);
+}
+
+.diff-btn.selected {
+  border-color: #e94560;
+  background: rgba(233,69,96,0.2);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(233,69,96,0.4);
+}
+
+.diff-icon {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+
+.diff-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.start-btn {
+  background: #e94560;
+  border: none;
+  border-radius: 50px;
+  padding: 18px 56px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(233,69,96,0.4);
+  transition: transform 0.1s;
+  font-family: inherit;
+  display: block;
+  margin: 0 auto;
+}
+
+.start-btn:active {
+  transform: scale(0.95);
+}
+
+.menu-link {
+  display: inline-block;
+  margin-top: 20px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50px;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ccc;
+  text-decoration: none;
+}
+
+.menu-link:active {
+  transform: scale(0.95);
+}
+
+/* GAME SCREEN */
+#gameScreen {
+  background: #1a1a2e;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hud {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.hud-item {
+  background: rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.next-bubble {
+  position: fixed;
+  top: 12px;
+  right: 70px;
+  background: rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  padding: 6px 14px;
+  font-size: 1rem;
+  color: #aaa;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.next-preview {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.pause-btn {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  background: rgba(0,0,0,0.6);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pause-btn:active {
+  transform: scale(0.9);
+}
+
+/* OVERLAYS */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.overlay.active {
+  display: flex;
+}
+
+.overlay-content {
+  background: #16213e;
+  border-radius: 24px;
+  padding: 36px;
+  text-align: center;
+  border: 3px solid rgba(255,255,255,0.15);
+  box-shadow: 0 0 40px rgba(233,69,96,0.2);
+  animation: popIn 0.3s ease;
+  max-width: 360px;
+  width: 90%;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.overlay-content h2 {
+  font-size: 2.2rem;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.go-stats {
+  margin-bottom: 24px;
+}
+
+.go-stat {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-bottom: 8px;
+}
+
+.go-stat span {
+  color: #e94560;
+}
+
+.overlay-btn {
+  display: block;
+  width: 100%;
+  background: #e94560;
+  border: none;
+  border-radius: 50px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  margin-bottom: 10px;
+  font-family: inherit;
+  box-shadow: 0 4px 12px rgba(233,69,96,0.3);
+}
+
+.overlay-btn.secondary {
+  background: rgba(255,255,255,0.1);
+  box-shadow: none;
+}
+
+.overlay-btn:active {
+  transform: scale(0.95);
+}
+
+/* DANGER LINE PULSE */
+@keyframes dangerPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start-emoji { animation: none; }
+}
