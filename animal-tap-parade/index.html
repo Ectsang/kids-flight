@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#FFD93D">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Animal Tap Parade</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <h1 class="title">Animal Tap Parade</h1>
+      <button class="mode-btn" id="modeBtn" aria-label="Change game mode">
+        <span class="mode-icon">🎮</span>
+        <span class="mode-label">Free Play</span>
+      </button>
+    </header>
+
+    <main class="main-content">
+      <div class="prompt-area" id="promptArea" aria-live="polite">
+        <p class="prompt-text" id="promptText">Tap any animal!</p>
+      </div>
+
+      <div class="animal-grid" id="animalGrid">
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="stats">
+        <span class="stat">Taps: <span id="tapCount">0</span></span>
+      </div>
+    </footer>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="overlay-content">
+      <h2 id="overlayTitle">Great Job!</h2>
+      <p id="overlayMessage">You found the cat!</p>
+      <button class="overlay-btn" id="overlayBtn">Keep Playing!</button>
+    </div>
+  </div>
+
+  <div class="confetti-container" id="confettiContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

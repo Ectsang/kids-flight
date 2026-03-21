@@ -1,0 +1,27 @@
+{
+  "name": "Animal Tap Parade",
+  "short_name": "Animal Tap",
+  "description": "A fun animal sound game for toddlers",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#FFD93D",
+  "theme_color": "#FFD93D",
+  "categories": ["games", "kids", "education"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "en-US",
+  "dir": "ltr"
+}
