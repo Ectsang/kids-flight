@@ -328,60 +328,114 @@ class BubblePopTower {
   update(dt) {
     const r = this.bubbleRadius;
 
-    // Update falling bubble
+    // ── Physics for ALL bubbles (settled + falling) ──
+    // Build a single list of all physics bodies
+    const allBodies = [...this.bubbles];
     if (this.falling && this.falling.dropped && !this.falling.settled) {
-      const f = this.falling;
-      f.vy += GRAVITY * dt;
-      f.y += f.vy * dt;
-      f.x += f.vx * dt;
-      f.vx *= FRICTION;
+      allBodies.push(this.falling);
+    }
 
-      // Wall collisions
-      if (f.x - r < 0) { f.x = r; f.vx = Math.abs(f.vx) * BOUNCE_DAMPING; }
-      if (f.x + r > this.W) { f.x = this.W - r; f.vx = -Math.abs(f.vx) * BOUNCE_DAMPING; }
+    // Apply gravity to all bodies
+    for (const b of allBodies) {
+      b.vy = (b.vy || 0) + GRAVITY * dt;
+      b.vx = (b.vx || 0) * FRICTION;
+      b.x += (b.vx || 0) * dt;
+      b.y += (b.vy || 0) * dt;
+    }
 
-      // Terrain collision
-      const terrainY = this.getTerrainY(f.x);
-      if (f.y + r >= terrainY) {
-        f.y = terrainY - r;
-        // Bounce off terrain surface using normal
-        const { nx, ny } = this.getTerrainNormal(f.x);
-        const dot = f.vx * nx + f.vy * ny;
-        f.vx -= 2 * dot * nx * BOUNCE_DAMPING;
-        f.vy -= 2 * dot * ny * BOUNCE_DAMPING;
-        // Slide along slope
-        f.vx += nx * 0.3;
-        if (Math.abs(f.vy) < 0.5 && Math.abs(f.vx) < 0.5) {
-          this.settleBubble(f);
+    // Wall collisions for all
+    for (const b of allBodies) {
+      if (b.x - r < 0) { b.x = r; b.vx = Math.abs(b.vx || 0) * BOUNCE_DAMPING; }
+      if (b.x + r > this.W) { b.x = this.W - r; b.vx = -Math.abs(b.vx || 0) * BOUNCE_DAMPING; }
+    }
+
+    // Terrain collisions for all
+    for (const b of allBodies) {
+      const terrainY = this.getTerrainY(b.x);
+      if (b.y + r >= terrainY) {
+        b.y = terrainY - r;
+        const { nx, ny } = this.getTerrainNormal(b.x);
+        const dot = (b.vx || 0) * nx + (b.vy || 0) * ny;
+        if (dot < 0) {
+          b.vx -= 2 * dot * nx * BOUNCE_DAMPING;
+          b.vy -= 2 * dot * ny * BOUNCE_DAMPING;
         }
+        // Slope slide
+        const slopeX = -ny; // tangent direction
+        b.vx += slopeX * GRAVITY * 0.5 * dt;
       }
+    }
 
-      // Collision with settled bubbles
-      for (const b of this.bubbles) {
-        const dx = f.x - b.x;
-        const dy = f.y - b.y;
+    // Bubble-vs-bubble collisions (all pairs, with momentum transfer)
+    for (let i = 0; i < allBodies.length; i++) {
+      for (let j = i + 1; j < allBodies.length; j++) {
+        const a = allBodies[i];
+        const b = allBodies[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const minDist = r * 2;
 
-        if (dist < minDist && dist > 0) {
-          // Push apart
+        if (dist < minDist && dist > 0.1) {
           const overlap = minDist - dist;
           const nx = dx / dist;
           const ny = dy / dist;
-          f.x += nx * overlap * 0.7;
-          f.y += ny * overlap * 0.7;
 
-          // Bounce
-          const dot = f.vx * nx + f.vy * ny;
-          f.vx -= dot * nx * (1 + BOUNCE_DAMPING);
-          f.vy -= dot * ny * (1 + BOUNCE_DAMPING);
+          // Push apart (50/50 split)
+          a.x -= nx * overlap * 0.5;
+          a.y -= ny * overlap * 0.5;
+          b.x += nx * overlap * 0.5;
+          b.y += ny * overlap * 0.5;
 
-          // If sitting on top, settle
-          if (f.vy < 0.8 && f.y < b.y) {
-            this.settleBubble(f);
-            break;
+          // Relative velocity
+          const dvx = (b.vx || 0) - (a.vx || 0);
+          const dvy = (b.vy || 0) - (a.vy || 0);
+          const dvDot = dvx * nx + dvy * ny;
+
+          // Only resolve if approaching
+          if (dvDot < 0) {
+            const impulse = dvDot * (1 + BOUNCE_DAMPING) * 0.5;
+            a.vx = (a.vx || 0) + impulse * nx;
+            a.vy = (a.vy || 0) + impulse * ny;
+            b.vx = (b.vx || 0) - impulse * nx;
+            b.vy = (b.vy || 0) - impulse * ny;
           }
         }
+      }
+    }
+
+    // Check if falling bubble has come to rest → settle it
+    if (this.falling && this.falling.dropped && !this.falling.settled) {
+      const f = this.falling;
+      const speed = Math.sqrt((f.vx || 0) ** 2 + (f.vy || 0) ** 2);
+      const terrainY = this.getTerrainY(f.x);
+      const onGround = f.y + r >= terrainY - 1;
+      const onBubble = this.bubbles.some(b => {
+        const d = Math.sqrt((f.x - b.x) ** 2 + (f.y - b.y) ** 2);
+        return d < r * 2.2 && f.y < b.y;
+      });
+
+      if (speed < 0.8 && (onGround || onBubble)) {
+        this.settleBubble(f);
+      }
+    }
+
+    // Check all settled bubbles are still at rest, mark moving ones
+    let anyMoving = false;
+    for (const b of this.bubbles) {
+      const speed = Math.sqrt((b.vx || 0) ** 2 + (b.vy || 0) ** 2);
+      if (speed < 0.3) {
+        b.vx = 0;
+        b.vy = 0;
+      } else {
+        anyMoving = true;
+      }
+      // Visual scale bounce on impact
+      if (b.settleTimer > 0) {
+        b.settleTimer -= dt;
+        b.scale = 1 + Math.sin(b.settleTimer * 0.5) * 0.08;
+      } else {
+        b.scale = 1;
       }
     }
 
@@ -390,7 +444,7 @@ class BubblePopTower {
     if (diff.quakeInterval > 0) {
       this.quakeTimer += dt;
       if (this.quakeTimer >= diff.quakeInterval && this.quakeActive <= 0) {
-        this.quakeActive = 40; // ~0.67s of shaking
+        this.quakeActive = 40;
         this.quakeTimer = 0;
         this.playTone(80, 0.4, 'sawtooth');
         this.floatingTexts.push({
@@ -406,31 +460,19 @@ class BubblePopTower {
       this.quakeOffsetX = (Math.random() - 0.5) * diff.quakeForce * 2 * intensity;
       this.quakeOffsetY = (Math.random() - 0.5) * diff.quakeForce * intensity;
 
-      // Jostle all settled bubbles
+      // Kick all settled bubbles with real velocity
       for (const b of this.bubbles) {
-        b.x += (Math.random() - 0.5) * diff.quakeForce * 0.4 * dt;
-        // Keep in bounds
-        b.x = Math.max(b.radius, Math.min(this.W - b.radius, b.x));
+        b.vx = (b.vx || 0) + (Math.random() - 0.5) * diff.quakeForce * 0.8 * dt;
+        b.vy = (b.vy || 0) - Math.random() * diff.quakeForce * 0.3 * dt;
       }
-      // Re-settle after quake
+
       if (this.quakeActive <= 0) {
         this.quakeOffsetX = 0;
         this.quakeOffsetY = 0;
-        this.applyGravity();
-        // Check for new matches created by the quake
+        // After quake settles, check for matches
         setTimeout(() => {
-          if (this.running) this.processMatches(null);
-        }, 200);
-      }
-    }
-
-    // Animate settled bubbles (minor settling)
-    for (const b of this.bubbles) {
-      if (b.settleTimer > 0) {
-        b.settleTimer -= dt;
-        b.scale = 1 + Math.sin(b.settleTimer * 0.5) * 0.1;
-      } else {
-        b.scale = 1;
+          if (this.running && !this.falling) this.processMatches(null);
+        }, 600);
       }
     }
 
@@ -454,12 +496,12 @@ class BubblePopTower {
   settleBubble(f) {
     if (f.settled) return;
     f.settled = true;
-    f.vy = 0;
-    f.vx = 0;
 
     const bubble = {
       x: f.x,
       y: f.y,
+      vx: (f.vx || 0) * 0.3, // keep some residual momentum
+      vy: (f.vy || 0) * 0.3,
       radius: this.bubbleRadius,
       color: f.color,
       scale: 1,
@@ -470,12 +512,12 @@ class BubblePopTower {
     this.bubbles.push(bubble);
     this.falling = null;
 
-    // Check for matches after a tiny delay for visual feedback
+    // Check for matches after physics settle a bit
     setTimeout(() => {
       if (!this.running) return;
       this.combo = 0;
       this.processMatches(bubble);
-    }, 100);
+    }, 250);
   }
 
   processMatches(trigger) {
@@ -589,18 +631,28 @@ class BubblePopTower {
 
     if (type === 'bomb') {
       this.playBomb();
-      // Clear all bubbles within blast radius
       const blastR = this.bubbleRadius * 5;
-      const toRemove = this.bubbles.filter(b => {
+      const toRemove = [];
+      // Blast: remove nearby, push away the rest
+      for (const b of this.bubbles) {
         const dx = b.x - bubble.x;
         const dy = b.y - bubble.y;
-        return Math.sqrt(dx * dx + dy * dy) < blastR;
-      });
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < blastR) {
+          toRemove.push(b);
+        } else if (dist < blastR * 2) {
+          // Shockwave pushes nearby bubbles
+          const force = (1 - dist / (blastR * 2)) * 8;
+          b.vx = (b.vx || 0) + (dx / dist) * force;
+          b.vy = (b.vy || 0) + (dy / dist) * force - 2;
+        }
+      }
       const points = toRemove.length * 15;
       this.score += points;
       this.totalPopped += toRemove.length;
+      const removeSet = new Set(toRemove.map(b => b.id));
       toRemove.forEach(b => this.spawnPopParticles(b.x, b.y, b.color.hex || '#ff8800'));
-      this.bubbles = this.bubbles.filter(b => !toRemove.includes(b));
+      this.bubbles = this.bubbles.filter(b => !removeSet.has(b.id));
       this.floatingTexts.push({ x: bubble.x, y: bubble.y, text: `💣 +${points}`, combo: '', life: 1 });
 
       // Big explosion particles
@@ -662,37 +714,9 @@ class BubblePopTower {
   }
 
   applyGravity() {
-    // Gravity: let bubbles fall to terrain or onto other bubbles
-    let moved = true;
-    let iterations = 0;
-    while (moved && iterations < 20) {
-      moved = false;
-      iterations++;
-      for (const b of this.bubbles) {
-        // Terrain floor at this bubble's X
-        const terrainFloor = this.getTerrainY(b.x) - b.radius;
-        let targetY = terrainFloor;
-
-        // Check bubbles below
-        for (const other of this.bubbles) {
-          if (other === b) continue;
-          const dx = b.x - other.x;
-          const dy = b.y - other.y;
-          if (dy < 0 && Math.abs(dx) < b.radius * 2) {
-            const aboveY = other.y - b.radius * 2;
-            if (aboveY < targetY) targetY = aboveY;
-          }
-        }
-
-        if (targetY > b.y + 1) {
-          b.y = Math.min(b.y + 4, targetY);
-          moved = true;
-        }
-        // Also keep above terrain
-        if (b.y + b.radius > this.getTerrainY(b.x)) {
-          b.y = this.getTerrainY(b.x) - b.radius;
-        }
-      }
+    // Give all bubbles a small downward kick so physics resolves naturally
+    for (const b of this.bubbles) {
+      b.vy = (b.vy || 0) + 1;
     }
   }
 
