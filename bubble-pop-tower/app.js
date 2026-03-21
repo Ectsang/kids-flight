@@ -16,10 +16,21 @@ const POWERUPS = [
 ];
 
 const DIFFICULTIES = {
-  easy:   { colors: 5, dropSpeed: 3.5, matchCount: 3, powerupMult: 0.8 },
-  medium: { colors: 6, dropSpeed: 5.0, matchCount: 3, powerupMult: 0.5 },
-  hard:   { colors: 6, dropSpeed: 7.0, matchCount: 4, powerupMult: 0.3 },
+  easy:   { colors: 5, dropSpeed: 3.5, matchCount: 3, powerupMult: 0.8, quakeInterval: 0, quakeForce: 0 },
+  medium: { colors: 6, dropSpeed: 5.0, matchCount: 3, powerupMult: 0.5, quakeInterval: 900, quakeForce: 3 },
+  hard:   { colors: 6, dropSpeed: 7.0, matchCount: 4, powerupMult: 0.3, quakeInterval: 500, quakeForce: 5 },
 };
+
+const TERRAIN_PROFILES = [
+  { name: 'Flat',      gen: (x, W, H) => H },
+  { name: 'Hill',      gen: (x, W, H) => H - Math.sin((x / W) * Math.PI) * H * 0.2 },
+  { name: 'Valley',    gen: (x, W, H) => H - H * 0.22 + Math.sin((x / W) * Math.PI) * H * 0.22 },
+  { name: 'Steps',     gen: (x, W, H) => { const s = Math.floor(x / (W / 4)); return H - [0, 0.12, 0.06, 0.18][s % 4] * H; } },
+  { name: 'Slopes',    gen: (x, W, H) => H - (x / W) * H * 0.25 },
+  { name: 'Waves',     gen: (x, W, H) => H - Math.sin((x / W) * Math.PI * 3) * H * 0.1 - H * 0.05 },
+  { name: 'Funnel',    gen: (x, W, H) => H - Math.abs(x - W / 2) / (W / 2) * H * 0.2 },
+  { name: 'Peaks',     gen: (x, W, H) => H - (Math.sin((x / W) * Math.PI * 2) * 0.5 + 0.5) * H * 0.18 - H * 0.04 },
+];
 
 const GRAVITY = 0.28;
 const BOUNCE_DAMPING = 0.55;
@@ -182,6 +193,16 @@ class BubblePopTower {
     this.checkingMatches = false;
     this.lastTime = performance.now();
 
+    // Terrain
+    this.generateTerrain();
+
+    // Earthquake
+    this.quakeTimer = 0;
+    this.quakeActive = 0;
+    this.quakeOffsetX = 0;
+    this.quakeOffsetY = 0;
+    this.bubblesDropped = 0;
+
     this.nextColor = this.randomBubbleColor();
     this.spawnFalling();
     this.updateHUD();
@@ -253,6 +274,41 @@ class BubblePopTower {
     this.startScreen.classList.add('active');
   }
 
+  // ─── TERRAIN ────────────────────────────────────────────────────
+
+  generateTerrain() {
+    // Pick a random non-flat profile (flat 30% of the time)
+    const roll = Math.random();
+    if (roll < 0.15) {
+      this.terrainProfile = TERRAIN_PROFILES[0]; // flat
+    } else {
+      const nonFlat = TERRAIN_PROFILES.slice(1);
+      this.terrainProfile = nonFlat[Math.floor(Math.random() * nonFlat.length)];
+    }
+
+    // Pre-compute terrain heights at each pixel
+    this.terrainHeights = new Float32Array(Math.ceil(this.W) + 1);
+    for (let x = 0; x <= this.W; x++) {
+      this.terrainHeights[x] = this.terrainProfile.gen(x, this.W, this.H);
+    }
+  }
+
+  getTerrainY(x) {
+    const clamped = Math.max(0, Math.min(this.W, Math.round(x)));
+    return this.terrainHeights[clamped] || this.H;
+  }
+
+  getTerrainNormal(x) {
+    const x0 = Math.max(0, x - 2);
+    const x1 = Math.min(this.W, x + 2);
+    const y0 = this.getTerrainY(x0);
+    const y1 = this.getTerrainY(x1);
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    return { nx: -dy / len, ny: dx / len };
+  }
+
   // ─── GAME LOOP ─────────────────────────────────────────────────
 
   loop() {
@@ -284,11 +340,18 @@ class BubblePopTower {
       if (f.x - r < 0) { f.x = r; f.vx = Math.abs(f.vx) * BOUNCE_DAMPING; }
       if (f.x + r > this.W) { f.x = this.W - r; f.vx = -Math.abs(f.vx) * BOUNCE_DAMPING; }
 
-      // Floor collision
-      if (f.y + r >= this.H) {
-        f.y = this.H - r;
-        f.vy = -Math.abs(f.vy) * BOUNCE_DAMPING;
-        if (Math.abs(f.vy) < 0.5) {
+      // Terrain collision
+      const terrainY = this.getTerrainY(f.x);
+      if (f.y + r >= terrainY) {
+        f.y = terrainY - r;
+        // Bounce off terrain surface using normal
+        const { nx, ny } = this.getTerrainNormal(f.x);
+        const dot = f.vx * nx + f.vy * ny;
+        f.vx -= 2 * dot * nx * BOUNCE_DAMPING;
+        f.vy -= 2 * dot * ny * BOUNCE_DAMPING;
+        // Slide along slope
+        f.vx += nx * 0.3;
+        if (Math.abs(f.vy) < 0.5 && Math.abs(f.vx) < 0.5) {
           this.settleBubble(f);
         }
       }
@@ -319,6 +382,45 @@ class BubblePopTower {
             break;
           }
         }
+      }
+    }
+
+    // Earthquake logic
+    const diff = DIFFICULTIES[this.difficulty];
+    if (diff.quakeInterval > 0) {
+      this.quakeTimer += dt;
+      if (this.quakeTimer >= diff.quakeInterval && this.quakeActive <= 0) {
+        this.quakeActive = 40; // ~0.67s of shaking
+        this.quakeTimer = 0;
+        this.playTone(80, 0.4, 'sawtooth');
+        this.floatingTexts.push({
+          x: this.W / 2, y: this.H * 0.3,
+          text: '🌋 EARTHQUAKE!', combo: '', life: 1.2,
+        });
+      }
+    }
+
+    if (this.quakeActive > 0) {
+      this.quakeActive -= dt;
+      const intensity = Math.min(1, this.quakeActive / 20);
+      this.quakeOffsetX = (Math.random() - 0.5) * diff.quakeForce * 2 * intensity;
+      this.quakeOffsetY = (Math.random() - 0.5) * diff.quakeForce * intensity;
+
+      // Jostle all settled bubbles
+      for (const b of this.bubbles) {
+        b.x += (Math.random() - 0.5) * diff.quakeForce * 0.4 * dt;
+        // Keep in bounds
+        b.x = Math.max(b.radius, Math.min(this.W - b.radius, b.x));
+      }
+      // Re-settle after quake
+      if (this.quakeActive <= 0) {
+        this.quakeOffsetX = 0;
+        this.quakeOffsetY = 0;
+        this.applyGravity();
+        // Check for new matches created by the quake
+        setTimeout(() => {
+          if (this.running) this.processMatches(null);
+        }, 200);
       }
     }
 
@@ -560,16 +662,16 @@ class BubblePopTower {
   }
 
   applyGravity() {
-    // Simple gravity: let bubbles fall if nothing below them
+    // Gravity: let bubbles fall to terrain or onto other bubbles
     let moved = true;
     let iterations = 0;
     while (moved && iterations < 20) {
       moved = false;
       iterations++;
       for (const b of this.bubbles) {
-        const oldY = b.y;
-        // Check floor
-        let targetY = this.H - b.radius;
+        // Terrain floor at this bubble's X
+        const terrainFloor = this.getTerrainY(b.x) - b.radius;
+        let targetY = terrainFloor;
 
         // Check bubbles below
         for (const other of this.bubbles) {
@@ -585,6 +687,10 @@ class BubblePopTower {
         if (targetY > b.y + 1) {
           b.y = Math.min(b.y + 4, targetY);
           moved = true;
+        }
+        // Also keep above terrain
+        if (b.y + b.radius > this.getTerrainY(b.x)) {
+          b.y = this.getTerrainY(b.x) - b.radius;
         }
       }
     }
@@ -633,12 +739,18 @@ class BubblePopTower {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.W, this.H);
 
+    // Apply earthquake screen shake
+    ctx.save();
+    if (this.quakeActive > 0) {
+      ctx.translate(this.quakeOffsetX, this.quakeOffsetY);
+    }
+
     // Background
-    const grad = ctx.createLinearGradient(0, 0, 0, this.H);
-    grad.addColorStop(0, '#1a1a2e');
-    grad.addColorStop(1, '#16213e');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, this.W, this.H);
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, this.H);
+    bgGrad.addColorStop(0, '#1a1a2e');
+    bgGrad.addColorStop(1, '#16213e');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(-10, -10, this.W + 20, this.H + 20);
 
     // Grid lines (subtle)
     ctx.strokeStyle = 'rgba(255,255,255,0.03)';
@@ -650,6 +762,9 @@ class BubblePopTower {
       ctx.lineTo(x, this.H);
       ctx.stroke();
     }
+
+    // Draw terrain
+    this.drawTerrain(ctx);
 
     // Danger line
     const dangerAlpha = this.bubbles.some(b => b.y - b.radius < this.dangerLine + this.bubbleRadius * 3)
@@ -672,7 +787,7 @@ class BubblePopTower {
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
       ctx.moveTo(aimX, this.falling.y);
-      ctx.lineTo(aimX, this.H);
+      ctx.lineTo(aimX, this.getTerrainY(aimX));
       ctx.stroke();
       ctx.setLineDash([]);
     }
@@ -716,6 +831,48 @@ class BubblePopTower {
         ctx.fillText(t.combo, t.x, t.y - 28);
       }
       ctx.restore();
+    }
+
+    // Close earthquake transform
+    ctx.restore();
+  }
+
+  drawTerrain(ctx) {
+    if (!this.terrainHeights) return;
+
+    // Terrain fill
+    const tGrad = ctx.createLinearGradient(0, this.H * 0.7, 0, this.H);
+    tGrad.addColorStop(0, 'rgba(30,40,70,0.9)');
+    tGrad.addColorStop(1, 'rgba(20,28,50,1)');
+
+    ctx.fillStyle = tGrad;
+    ctx.beginPath();
+    ctx.moveTo(0, this.H + 5);
+    const step = 3;
+    for (let x = 0; x <= this.W; x += step) {
+      ctx.lineTo(x, this.getTerrainY(x));
+    }
+    ctx.lineTo(this.W, this.H + 5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Terrain edge highlight
+    ctx.strokeStyle = 'rgba(100,140,200,0.3)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let x = 0; x <= this.W; x += step) {
+      if (x === 0) ctx.moveTo(x, this.getTerrainY(x));
+      else ctx.lineTo(x, this.getTerrainY(x));
+    }
+    ctx.stroke();
+
+    // Terrain surface dots for texture
+    ctx.fillStyle = 'rgba(100,140,200,0.08)';
+    for (let x = 10; x < this.W; x += 20) {
+      const ty = this.getTerrainY(x);
+      ctx.beginPath();
+      ctx.arc(x, ty + 8, 2, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 
@@ -785,6 +942,9 @@ class BubblePopTower {
     if (this.combo > 1) {
       this.hudCombo.textContent = `${this.combo}x Combo!`;
       this.hudCombo.style.color = '#ffd166';
+    } else if (this.terrainProfile && this.terrainProfile.name !== 'Flat') {
+      this.hudCombo.textContent = `⛰️ ${this.terrainProfile.name}`;
+      this.hudCombo.style.color = '#74b9ff';
     } else {
       this.hudCombo.textContent = '';
     }

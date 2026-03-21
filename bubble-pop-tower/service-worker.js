@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bubble-pop-tower-v1';
+const CACHE_NAME = 'bubble-pop-tower-v2';
 const ASSETS = [
   './',
   './index.html',
