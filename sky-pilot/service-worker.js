@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sky-pilot-v1';
+const CACHE_NAME = 'sky-pilot-v2';
 const ASSETS = [
   './',
   './index.html',
