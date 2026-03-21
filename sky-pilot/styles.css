@@ -59,7 +59,65 @@ body {
 .start-hint {
   font-size: 1.5rem;
   color: #555;
+  margin-bottom: 20px;
+}
+
+/* Difficulty Picker */
+.difficulty-picker {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.diff-btn {
+  background: #fff;
+  border: 4px solid #333;
+  border-radius: 18px;
+  padding: 12px 18px;
+  cursor: pointer;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+  transition: transform 0.1s;
+  text-align: center;
+  font-family: inherit;
+}
+
+.diff-btn:active {
+  transform: scale(0.9);
+}
+
+.diff-btn.selected {
+  border-color: #FF6B6B;
+  background: #FFF0F0;
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255,107,107,0.4);
+}
+
+.diff-hearts {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+  letter-spacing: 2px;
+}
+
+.diff-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Game Over Stats */
+.game-over-stats {
+  margin-bottom: 24px;
+}
+
+.go-stat {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
 }
 
 .vehicle-picker {
@@ -140,6 +198,32 @@ body {
   font-size: 1.2rem;
   font-weight: bold;
   box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+}
+
+.hud-item.hurt {
+  animation: hurtFlash 0.3s ease;
+}
+
+@keyframes hurtFlash {
+  0%, 100% { background: rgba(255,255,255,0.9); }
+  50% { background: rgba(255,80,80,0.9); }
+}
+
+.damage-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,0,0,0.2);
+  pointer-events: none;
+  z-index: 5;
+  animation: flashOut 0.4s ease forwards;
+}
+
+@keyframes flashOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .pause-btn {

@@ -34,6 +34,12 @@ const SKY_COLORS = [
   { stop: 3500, colors: ['#87CEEB', '#B8E4F0'] },   // back to day
 ];
 
+const DIFFICULTIES = {
+  easy:   { maxHP: 5, cloudDmg: 0.5, floorDmg: 1, cloudRate: 1.0, healChance: 0.15 },
+  medium: { maxHP: 3, cloudDmg: 1,   floorDmg: 2, cloudRate: 1.3, healChance: 0.08 },
+  hard:   { maxHP: 2, cloudDmg: 1,   floorDmg: 2, cloudRate: 1.6, healChance: 0.03 },
+};
+
 const CELEBRATIONS = ['⭐', '🎉', '🌟', '👏', '🏆', '💪', '🥳'];
 
 // ─── GAME ────────────────────────────────────────────────────────
@@ -43,6 +49,7 @@ class SkyPilot {
     this.canvas = document.getElementById('gameCanvas');
     this.ctx = this.canvas.getContext('2d');
     this.selectedVehicle = VEHICLES[0];
+    this.selectedDifficulty = 'easy';
     this.running = false;
     this.paused = false;
     this.animFrame = null;
@@ -50,6 +57,7 @@ class SkyPilot {
 
     this.setupUI();
     this.buildVehiclePicker();
+    this.buildDifficultyPicker();
   }
 
   setupUI() {
@@ -58,11 +66,15 @@ class SkyPilot {
     this.pauseOverlay = document.getElementById('pauseOverlay');
     this.hudStars = document.getElementById('hudStars');
     this.hudDistance = document.getElementById('hudDistance');
+    this.hudHP = document.getElementById('hudHP');
+    this.gameOverOverlay = document.getElementById('gameOverOverlay');
 
     document.getElementById('startBtn').addEventListener('click', () => this.startGame());
     document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
     document.getElementById('resumeBtn').addEventListener('click', () => this.togglePause());
     document.getElementById('homeBtn').addEventListener('click', () => this.goHome());
+    document.getElementById('retryBtn').addEventListener('click', () => { this.gameOverOverlay.classList.remove('active'); this.startGame(); });
+    document.getElementById('goHomeBtn').addEventListener('click', () => { this.gameOverOverlay.classList.remove('active'); this.goHome(); });
 
     // Tap/click to fly
     this.canvas.addEventListener('touchstart', (e) => {
@@ -91,6 +103,16 @@ class SkyPilot {
         document.querySelector('.start-plane').textContent = v.emoji;
       });
       picker.appendChild(btn);
+    });
+  }
+
+  buildDifficultyPicker() {
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        this.selectedDifficulty = btn.dataset.diff;
+      });
     });
   }
 
@@ -132,6 +154,17 @@ class SkyPilot {
     this.playTone(250, 0.15, 'square');
   }
 
+  playHurt() {
+    this.playTone(150, 0.2, 'sawtooth');
+    setTimeout(() => this.playTone(120, 0.15, 'sawtooth'), 100);
+  }
+
+  playGameOver() {
+    this.playTone(400, 0.15);
+    setTimeout(() => this.playTone(300, 0.15), 150);
+    setTimeout(() => this.playTone(200, 0.3), 300);
+  }
+
   // ─── GAME STATE ────────────────────────────────────────────────
 
   resizeCanvas() {
@@ -159,6 +192,11 @@ class SkyPilot {
       trail: [],
     };
 
+    this.diff = DIFFICULTIES[this.selectedDifficulty];
+    this.hp = this.diff.maxHP;
+    this.maxHP = this.diff.maxHP;
+    this.invincibleTimer = 0; // brief invincibility after hit
+
     this.stars = 0;
     this.distance = 0;
     this.scrollSpeed = 1.5;
@@ -168,6 +206,7 @@ class SkyPilot {
     this.holding = false;
     this.running = true;
     this.paused = false;
+    this.gameOver = false;
     this.lastTime = performance.now();
 
     // World objects
@@ -197,7 +236,7 @@ class SkyPilot {
   }
 
   flap() {
-    if (!this.running || this.paused) return;
+    if (!this.running || this.paused || this.gameOver) return;
     this.player.vy = this.flapForce;
     this.holding = true;
     this.playFlap();
@@ -221,8 +260,10 @@ class SkyPilot {
   goHome() {
     this.running = false;
     this.paused = false;
+    this.gameOver = false;
     cancelAnimationFrame(this.animFrame);
     this.pauseOverlay.classList.remove('active');
+    this.gameOverOverlay.classList.remove('active');
     this.gameScreen.classList.remove('active');
     this.startScreen.classList.add('active');
   }
@@ -257,7 +298,12 @@ class SkyPilot {
     // Rotation follows velocity
     p.rotation = Math.max(-0.4, Math.min(0.5, p.vy * 0.05));
 
-    // Bounds - soft bounce, no death
+    // Invincibility cooldown
+    if (this.invincibleTimer > 0) {
+      this.invincibleTimer -= dt;
+    }
+
+    // Bounds - bounce + floor damage
     if (p.y < p.size / 2) {
       p.y = p.size / 2;
       p.vy = Math.abs(p.vy) * 0.3;
@@ -266,7 +312,7 @@ class SkyPilot {
     if (p.y > this.H - p.size / 2) {
       p.y = this.H - p.size / 2;
       p.vy = -Math.abs(p.vy) * 0.5;
-      this.playBounce();
+      this.takeDamage(this.diff.floorDmg);
     }
 
     // Trail
@@ -280,7 +326,7 @@ class SkyPilot {
 
     // Spawn clouds
     this.cloudTimer += dt;
-    if (this.cloudTimer > 60 / this.scrollSpeed) {
+    if (this.cloudTimer > 60 / (this.scrollSpeed * this.diff.cloudRate)) {
       this.cloudTimer = 0;
       this.spawnCloud();
     }
@@ -320,7 +366,11 @@ class SkyPilot {
       const dy = p.y - c.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < p.size * 0.6 + 18) {
-        this.stars += c.points;
+        if (c.isHeart) {
+          this.heal(1);
+        } else {
+          this.stars += c.points;
+        }
         this.playCollect();
         this.spawnCollectParticles(c.x, c.y, c.emoji);
         this.updateHUD();
@@ -329,21 +379,22 @@ class SkyPilot {
       return true;
     });
 
-    // Collision with clouds - gentle bounce, no death
+    // Collision with clouds - bounce + damage
     this.clouds.forEach(c => {
+      if (c.hit) return; // already hit this cloud
       const dx = p.x - c.x;
       const dy = p.y - c.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const minDist = p.size * 0.4 + c.size * 0.4;
       if (dist < minDist) {
-        // Push player away gently
+        c.hit = true; // only damage once per cloud
         const angle = Math.atan2(dy, dx);
         p.y += Math.sin(angle) * 3 * dt;
         p.vy *= 0.5;
         if (c.slow) {
           this.scrollSpeed = Math.max(1, this.scrollSpeed * 0.98);
         }
-        this.playBounce();
+        this.takeDamage(this.diff.cloudDmg);
       }
     });
 
@@ -378,6 +429,19 @@ class SkyPilot {
   }
 
   spawnCollectible() {
+    // Maybe spawn a heart if HP is low
+    if (this.hp < this.maxHP && Math.random() < this.diff.healChance) {
+      this.collectibles.push({
+        x: this.W + 30,
+        y: Math.random() * (this.H - 120) + 60,
+        emoji: '❤️‍🩹',
+        points: 0,
+        isHeart: true,
+        bobPhase: Math.random() * Math.PI * 2,
+      });
+      return;
+    }
+
     // Weighted random pick
     const r = Math.random();
     let cumulative = 0;
@@ -394,6 +458,50 @@ class SkyPilot {
       points: type.points,
       bobPhase: Math.random() * Math.PI * 2,
     });
+  }
+
+  takeDamage(amount) {
+    if (this.invincibleTimer > 0 || this.gameOver) return;
+    this.hp = Math.max(0, this.hp - amount);
+    this.invincibleTimer = 30; // ~0.5s at 60fps
+    this.playHurt();
+    this.updateHUD();
+
+    // Screen flash
+    const flash = document.createElement('div');
+    flash.className = 'damage-flash';
+    document.getElementById('gameScreen').appendChild(flash);
+    setTimeout(() => flash.remove(), 400);
+
+    // Animate HP hud
+    this.hudHP.classList.remove('hurt');
+    void this.hudHP.offsetWidth;
+    this.hudHP.classList.add('hurt');
+
+    if (this.hp <= 0) {
+      this.showGameOver();
+    }
+  }
+
+  heal(amount) {
+    this.hp = Math.min(this.maxHP, this.hp + amount);
+    this.updateHUD();
+  }
+
+  showGameOver() {
+    this.gameOver = true;
+    this.running = false;
+    cancelAnimationFrame(this.animFrame);
+    this.playGameOver();
+
+    const titles = ['Great Flight!', 'Nice Try!', 'Good Job!', 'Wow!', 'So High!'];
+    document.getElementById('gameOverTitle').textContent = titles[Math.floor(Math.random() * titles.length)];
+    document.getElementById('goStars').textContent = this.stars;
+    document.getElementById('goDistance').textContent = Math.floor(this.distance);
+
+    setTimeout(() => {
+      this.gameOverOverlay.classList.add('active');
+    }, 500);
   }
 
   spawnTrail() {
@@ -519,16 +627,19 @@ class SkyPilot {
       ctx.restore();
     });
 
-    // Player
+    // Player (blink when invincible)
     const p = this.player;
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate(p.rotation);
-    ctx.font = `${p.size}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(this.selectedVehicle.emoji, 0, 0);
-    ctx.restore();
+    const visible = this.invincibleTimer <= 0 || Math.floor(this.invincibleTimer * 3) % 2 === 0;
+    if (visible) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      ctx.font = `${p.size}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.selectedVehicle.emoji, 0, 0);
+      ctx.restore();
+    }
   }
 
   drawSky(ctx) {
@@ -568,6 +679,12 @@ class SkyPilot {
   }
 
   updateHUD() {
+    // Build hearts display
+    const fullHearts = Math.floor(this.hp);
+    const halfHeart = (this.hp % 1) >= 0.5 ? 1 : 0;
+    const emptyHearts = Math.ceil(this.maxHP) - fullHearts - halfHeart;
+    this.hudHP.textContent = '❤️'.repeat(fullHearts) + (halfHeart ? '💔' : '') + '🖤'.repeat(emptyHearts);
+
     this.hudStars.textContent = `⭐ ${this.stars}`;
     this.hudDistance.textContent = `📏 ${Math.floor(this.distance)}m`;
   }

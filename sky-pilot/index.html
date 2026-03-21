@@ -18,6 +18,20 @@
       <div class="start-plane">✈️</div>
       <p class="start-hint">Tap to fly!</p>
       <div class="vehicle-picker" id="vehiclePicker"></div>
+      <div class="difficulty-picker" id="difficultyPicker">
+        <button class="diff-btn selected" data-diff="easy">
+          <span class="diff-hearts">❤️❤️❤️❤️❤️</span>
+          <span class="diff-label">Easy</span>
+        </button>
+        <button class="diff-btn" data-diff="medium">
+          <span class="diff-hearts">❤️❤️❤️</span>
+          <span class="diff-label">Medium</span>
+        </button>
+        <button class="diff-btn" data-diff="hard">
+          <span class="diff-hearts">❤️❤️</span>
+          <span class="diff-label">Hard</span>
+        </button>
+      </div>
       <button class="start-btn" id="startBtn">Start Flying!</button>
     </div>
   </div>
@@ -26,6 +40,7 @@
   <div class="screen" id="gameScreen">
     <canvas id="gameCanvas"></canvas>
     <div class="hud">
+      <div class="hud-item" id="hudHP">❤️❤️❤️❤️❤️</div>
       <div class="hud-item" id="hudStars">⭐ 0</div>
       <div class="hud-item" id="hudDistance">📏 0m</div>
     </div>
@@ -38,6 +53,19 @@
       <h2>Paused</h2>
       <button class="overlay-btn" id="resumeBtn">▶️ Keep Flying!</button>
       <button class="overlay-btn secondary" id="homeBtn">🏠 Home</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER OVERLAY -->
+  <div class="overlay" id="gameOverOverlay">
+    <div class="overlay-content">
+      <h2 id="gameOverTitle">Great Flight!</h2>
+      <div class="game-over-stats">
+        <p class="go-stat">⭐ <span id="goStars">0</span> stars</p>
+        <p class="go-stat">📏 <span id="goDistance">0</span>m flown</p>
+      </div>
+      <button class="overlay-btn" id="retryBtn">🔄 Fly Again!</button>
+      <button class="overlay-btn secondary" id="goHomeBtn">🏠 Home</button>
     </div>
   </div>
 
