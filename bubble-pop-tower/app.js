@@ -16,14 +16,14 @@ const POWERUPS = [
 ];
 
 const DIFFICULTIES = {
-  easy:   { colors: 4, dropSpeed: 2.0, matchCount: 3, powerupMult: 1.5 },
-  medium: { colors: 5, dropSpeed: 3.0, matchCount: 3, powerupMult: 1.0 },
-  hard:   { colors: 6, dropSpeed: 4.5, matchCount: 3, powerupMult: 0.6 },
+  easy:   { colors: 5, dropSpeed: 3.5, matchCount: 3, powerupMult: 0.8 },
+  medium: { colors: 6, dropSpeed: 5.0, matchCount: 3, powerupMult: 0.5 },
+  hard:   { colors: 6, dropSpeed: 7.0, matchCount: 4, powerupMult: 0.3 },
 };
 
-const GRAVITY = 0.15;
-const BOUNCE_DAMPING = 0.4;
-const FRICTION = 0.98;
+const GRAVITY = 0.28;
+const BOUNCE_DAMPING = 0.55;
+const FRICTION = 0.96;
 const MATCH_MIN = 3;
 
 // ─── GAME ────────────────────────────────────────────────────────
