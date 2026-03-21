@@ -79,6 +79,23 @@ body {
 }
 
 /* HOME SCREEN */
+.menu-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50px;
+  padding: 10px 24px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none;
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.1);
+}
+
+.menu-link:active {
+  transform: scale(0.95);
+}
+
 .worlds-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

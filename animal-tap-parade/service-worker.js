@@ -1,4 +1,4 @@
-const CACHE_NAME = 'animal-tap-parade-v1';
+const CACHE_NAME = 'animal-tap-parade-v2';
 const ASSETS = [
   './',
   './index.html',
