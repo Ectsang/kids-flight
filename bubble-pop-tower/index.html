@@ -32,7 +32,11 @@
         </button>
       </div>
       <button class="start-btn" id="startBtn">Start!</button>
-      <a class="menu-link" href="../">🏠 Game Menu</a>
+      <div class="bottom-links">
+        <a class="menu-link" href="../">🏠 Game Menu</a>
+        <span class="link-dot">·</span>
+        <a class="menu-link" href="#" onclick="navigator.serviceWorker.getRegistrations().then(r=>r.forEach(sw=>sw.unregister())).then(()=>location.reload());return false">Reset Cache</a>
+      </div>
     </div>
   </div>
 
@@ -70,6 +74,7 @@
     </div>
   </div>
 
+  <script src="matter.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

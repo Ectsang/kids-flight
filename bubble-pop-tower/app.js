@@ -16,27 +16,25 @@ const POWERUPS = [
 ];
 
 const DIFFICULTIES = {
-  easy:   { colors: 5, dropSpeed: 3.5, matchCount: 3, powerupMult: 0.8, quakeInterval: 0, quakeForce: 0 },
-  medium: { colors: 6, dropSpeed: 5.0, matchCount: 3, powerupMult: 0.5, quakeInterval: 900, quakeForce: 3 },
-  hard:   { colors: 6, dropSpeed: 7.0, matchCount: 4, powerupMult: 0.3, quakeInterval: 500, quakeForce: 5 },
+  easy:   { colors: 5, dropSpeed: 6, matchCount: 3, powerupMult: 0.8, quakeInterval: 0, quakeForce: 0 },
+  medium: { colors: 6, dropSpeed: 9, matchCount: 3, powerupMult: 0.5, quakeInterval: 900, quakeForce: 5 },
+  hard:   { colors: 6, dropSpeed: 12, matchCount: 4, powerupMult: 0.3, quakeInterval: 500, quakeForce: 8 },
 };
 
 const TERRAIN_PROFILES = [
-  { name: 'Flat',      gen: (x, W, H) => H },
-  { name: 'Hill',      gen: (x, W, H) => H - Math.sin((x / W) * Math.PI) * H * 0.2 },
-  { name: 'Valley',    gen: (x, W, H) => H - H * 0.22 + Math.sin((x / W) * Math.PI) * H * 0.22 },
-  { name: 'Steps',     gen: (x, W, H) => { const s = Math.floor(x / (W / 4)); return H - [0, 0.12, 0.06, 0.18][s % 4] * H; } },
-  { name: 'Slopes',    gen: (x, W, H) => H - (x / W) * H * 0.25 },
-  { name: 'Waves',     gen: (x, W, H) => H - Math.sin((x / W) * Math.PI * 3) * H * 0.1 - H * 0.05 },
-  { name: 'Funnel',    gen: (x, W, H) => H - Math.abs(x - W / 2) / (W / 2) * H * 0.2 },
-  { name: 'Peaks',     gen: (x, W, H) => H - (Math.sin((x / W) * Math.PI * 2) * 0.5 + 0.5) * H * 0.18 - H * 0.04 },
+  { name: 'Flat',      gen: (x, W, H) => H * 0.88 },
+  { name: 'Hill',      gen: (x, W, H) => H * 0.88 - Math.sin((x / W) * Math.PI) * H * 0.18 },
+  { name: 'Valley',    gen: (x, W, H) => H * 0.7 + Math.sin((x / W) * Math.PI) * H * 0.18 },
+  { name: 'Steps',     gen: (x, W, H) => { const s = Math.floor(x / (W / 4)); return H * 0.88 - [0, 0.12, 0.06, 0.18][s % 4] * H; } },
+  { name: 'Slopes',    gen: (x, W, H) => H * 0.88 - (x / W) * H * 0.2 },
+  { name: 'Waves',     gen: (x, W, H) => H * 0.83 - Math.sin((x / W) * Math.PI * 3) * H * 0.08 },
+  { name: 'Funnel',    gen: (x, W, H) => H * 0.88 - Math.abs(x - W / 2) / (W / 2) * H * 0.18 },
+  { name: 'Peaks',     gen: (x, W, H) => H * 0.84 - (Math.sin((x / W) * Math.PI * 2) * 0.5 + 0.5) * H * 0.16 },
 ];
 
-const GRAVITY = 0.28;
-const BOUNCE_DAMPING = 0.65;
-const FRICTION = 0.97;
 const MATCH_MIN = 3;
-const SETTLE_SPEED = 0.4;
+
+const { Engine, World, Bodies, Body, Composite, Events, Vector } = Matter;
 
 // ─── GAME ────────────────────────────────────────────────────────
 
@@ -85,14 +83,12 @@ class BubblePopTower {
 
     this.canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      const touch = e.touches[0];
-      this.handleTap(touch.clientX);
+      this.handleTap(e.touches[0].clientX);
     });
     this.canvas.addEventListener('mousedown', (e) => {
       this.handleTap(e.clientX);
     });
 
-    // Track pointer for aim preview
     this.aimX = 0;
     this.canvas.addEventListener('touchmove', (e) => {
       e.preventDefault();
@@ -107,15 +103,13 @@ class BubblePopTower {
     });
   }
 
+  // ─── AUDIO ──────────────────────────────────────────────────────
+
   setupAudio() {
     if (!this.audioCtx) {
-      try {
-        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      } catch (e) {}
+      try { this.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
     }
-    if (this.audioCtx && this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
-    }
+    if (this.audioCtx && this.audioCtx.state === 'suspended') this.audioCtx.resume();
   }
 
   playTone(freq, duration, type = 'sine') {
@@ -138,21 +132,9 @@ class BubblePopTower {
       setTimeout(() => this.playTone(base + i * 60, 0.12), i * 50);
     }
   }
-
-  playDrop() {
-    this.playTone(300, 0.08, 'triangle');
-  }
-
-  playBomb() {
-    this.playTone(100, 0.3, 'sawtooth');
-    setTimeout(() => this.playTone(80, 0.2, 'sawtooth'), 100);
-  }
-
-  playGameOver() {
-    this.playTone(400, 0.15);
-    setTimeout(() => this.playTone(300, 0.15), 150);
-    setTimeout(() => this.playTone(200, 0.3), 300);
-  }
+  playDrop() { this.playTone(300, 0.08, 'triangle'); }
+  playBomb() { this.playTone(100, 0.3, 'sawtooth'); setTimeout(() => this.playTone(80, 0.2, 'sawtooth'), 100); }
+  playGameOver() { this.playTone(400, 0.15); setTimeout(() => this.playTone(300, 0.15), 150); setTimeout(() => this.playTone(200, 0.3), 300); }
 
   // ─── GAME STATE ────────────────────────────────────────────────
 
@@ -179,8 +161,13 @@ class BubblePopTower {
     this.dropSpeed = diff.dropSpeed;
     this.powerupMult = diff.powerupMult;
 
-    this.bubbles = [];
-    this.falling = null;
+    // Matter.js engine
+    this.engine = Engine.create({ gravity: { x: 0, y: 1.2 } });
+    this.world = this.engine.world;
+
+    // Game state
+    this.bubbles = [];       // { body, color, id, scale, settleTimer }
+    this.falling = null;     // { body, color, dropped }
     this.particles = [];
     this.floatingTexts = [];
 
@@ -191,13 +178,14 @@ class BubblePopTower {
     this.gameOver = false;
     this.running = true;
     this.paused = false;
-    this.checkingMatches = false;
     this.lastTime = performance.now();
 
     // Terrain
     this.generateTerrain();
+    this.buildTerrainBodies();
+    this.buildWalls();
     this.turnsSinceTerrain = 0;
-    this.nextTerrainShift = 4 + Math.floor(Math.random() * 5); // 4-8 turns
+    this.nextTerrainShift = 4 + Math.floor(Math.random() * 5);
     this.terrainShifting = false;
     this.terrainShiftTimer = 0;
     this.oldTerrainHeights = null;
@@ -208,7 +196,6 @@ class BubblePopTower {
     this.quakeActive = 0;
     this.quakeOffsetX = 0;
     this.quakeOffsetY = 0;
-    this.bubblesDropped = 0;
 
     this.nextColor = this.randomBubbleColor();
     this.spawnFalling();
@@ -217,15 +204,91 @@ class BubblePopTower {
     this.loop();
   }
 
+  // ─── MATTER.JS TERRAIN & WALLS ─────────────────────────────────
+
+  buildTerrainBodies() {
+    // Remove old terrain bodies
+    if (this.terrainBodies) {
+      Composite.remove(this.world, this.terrainBodies);
+    }
+    // Build terrain as chain of small static rectangles
+    this.terrainBodies = [];
+    const step = 10;
+    for (let x = 0; x <= this.W - step; x += step) {
+      const y0 = this.getTerrainY(x);
+      const y1 = this.getTerrainY(x + step);
+      const cx = x + step / 2;
+      const cy = (y0 + y1) / 2;
+      const dx = step;
+      const dy = y1 - y0;
+      const len = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+      const seg = Bodies.rectangle(cx, cy + len / 2, len, len, {
+        isStatic: true,
+        angle: angle,
+        friction: 0.3,
+        restitution: 0.4,
+        label: 'terrain',
+      });
+      this.terrainBodies.push(seg);
+    }
+    Composite.add(this.world, this.terrainBodies);
+  }
+
+  buildWalls() {
+    if (this.wallBodies) Composite.remove(this.world, this.wallBodies);
+    const thick = 60;
+    this.wallBodies = [
+      // Left wall
+      Bodies.rectangle(-thick / 2, this.H / 2, thick, this.H * 2, { isStatic: true, restitution: 0.5, label: 'wall' }),
+      // Right wall
+      Bodies.rectangle(this.W + thick / 2, this.H / 2, thick, this.H * 2, { isStatic: true, restitution: 0.5, label: 'wall' }),
+      // Floor (safety net below terrain)
+      Bodies.rectangle(this.W / 2, this.H + thick, this.W * 2, thick, { isStatic: true, restitution: 0.3, label: 'floor' }),
+    ];
+    Composite.add(this.world, this.wallBodies);
+  }
+
+  createBubbleBody(x, y, opts = {}) {
+    return Bodies.circle(x, y, this.bubbleRadius, {
+      restitution: 0.5,
+      friction: 0.05,
+      frictionAir: 0.01,
+      density: 0.002,
+      label: 'bubble',
+      ...opts,
+    });
+  }
+
+  // ─── TERRAIN ────────────────────────────────────────────────────
+
+  generateTerrain() {
+    const roll = Math.random();
+    if (roll < 0.15) {
+      this.terrainProfile = TERRAIN_PROFILES[0];
+    } else {
+      const nonFlat = TERRAIN_PROFILES.slice(1);
+      this.terrainProfile = nonFlat[Math.floor(Math.random() * nonFlat.length)];
+    }
+    this.terrainHeights = new Float32Array(Math.ceil(this.W) + 1);
+    for (let x = 0; x <= this.W; x++) {
+      this.terrainHeights[x] = this.terrainProfile.gen(x, this.W, this.H);
+    }
+  }
+
+  getTerrainY(x) {
+    const clamped = Math.max(0, Math.min(this.W, Math.round(x)));
+    return this.terrainHeights[clamped] || this.H;
+  }
+
+  // ─── GAME LOGIC ────────────────────────────────────────────────
+
   randomBubbleColor() {
-    // Small chance of powerup
     const pRoll = Math.random();
     let cumFreq = 0;
     for (const pu of POWERUPS) {
       cumFreq += pu.freq * this.powerupMult;
-      if (pRoll < cumFreq) {
-        return { ...pu, isPowerup: true };
-      }
+      if (pRoll < cumFreq) return { ...pu, isPowerup: true };
     }
     const c = this.activeColors[Math.floor(Math.random() * this.activeColors.length)];
     return { ...c, isPowerup: false };
@@ -236,14 +299,13 @@ class BubblePopTower {
     this.nextColor = this.randomBubbleColor();
     this.updateNextPreview();
 
+    // Create a sensor body (no physics until dropped)
     this.falling = {
       x: this.W / 2,
       y: this.bubbleRadius + 8,
-      vx: 0,
-      vy: 0,
-      radius: this.bubbleRadius,
       color,
-      settled: false,
+      dropped: false,
+      body: null,
     };
     this.aimX = this.W / 2;
   }
@@ -252,10 +314,14 @@ class BubblePopTower {
     if (!this.running || this.paused || this.gameOver) return;
     if (!this.falling || this.falling.dropped) return;
 
-    // Set horizontal position and drop
-    this.falling.x = Math.max(this.bubbleRadius, Math.min(this.W - this.bubbleRadius, clientX));
+    const x = Math.max(this.bubbleRadius, Math.min(this.W - this.bubbleRadius, clientX));
+    const body = this.createBubbleBody(x, this.falling.y);
+    Body.setVelocity(body, { x: 0, y: this.dropSpeed });
+    Composite.add(this.world, body);
+
+    this.falling.body = body;
     this.falling.dropped = true;
-    this.falling.vy = this.dropSpeed;
+    this.falling.x = x;
     this.playDrop();
   }
 
@@ -279,41 +345,7 @@ class BubblePopTower {
     this.gameOverOverlay.classList.remove('active');
     this.gameScreen.classList.remove('active');
     this.startScreen.classList.add('active');
-  }
-
-  // ─── TERRAIN ────────────────────────────────────────────────────
-
-  generateTerrain() {
-    // Pick a random non-flat profile (flat 30% of the time)
-    const roll = Math.random();
-    if (roll < 0.15) {
-      this.terrainProfile = TERRAIN_PROFILES[0]; // flat
-    } else {
-      const nonFlat = TERRAIN_PROFILES.slice(1);
-      this.terrainProfile = nonFlat[Math.floor(Math.random() * nonFlat.length)];
-    }
-
-    // Pre-compute terrain heights at each pixel
-    this.terrainHeights = new Float32Array(Math.ceil(this.W) + 1);
-    for (let x = 0; x <= this.W; x++) {
-      this.terrainHeights[x] = this.terrainProfile.gen(x, this.W, this.H);
-    }
-  }
-
-  getTerrainY(x) {
-    const clamped = Math.max(0, Math.min(this.W, Math.round(x)));
-    return this.terrainHeights[clamped] || this.H;
-  }
-
-  getTerrainNormal(x) {
-    const x0 = Math.max(0, x - 2);
-    const x1 = Math.min(this.W, x + 2);
-    const y0 = this.getTerrainY(x0);
-    const y1 = this.getTerrainY(x1);
-    const dx = x1 - x0;
-    const dy = y1 - y0;
-    const len = Math.sqrt(dx * dx + dy * dy);
-    return { nx: -dy / len, ny: dx / len };
+    if (this.engine) Engine.clear(this.engine);
   }
 
   // ─── GAME LOOP ─────────────────────────────────────────────────
@@ -322,124 +354,26 @@ class BubblePopTower {
     if (!this.running || this.paused) return;
 
     const now = performance.now();
-    const rawDt = (now - this.lastTime) / 16.67;
-    const dt = Math.min(rawDt, 3);
+    const elapsed = now - this.lastTime;
     this.lastTime = now;
 
-    this.update(dt);
+    // Step Matter.js engine (fixed timestep for stability)
+    Engine.update(this.engine, Math.min(elapsed, 32));
+
+    this.update(elapsed);
     this.draw();
 
     this.animFrame = requestAnimationFrame(() => this.loop());
   }
 
-  update(dt) {
+  update(elapsed) {
+    const dt = Math.min(elapsed / 16.67, 3);
     const r = this.bubbleRadius;
 
-    // ── Physics for ALL bubbles (settled + falling) ──
-    // Build a single list of all physics bodies
-    const allBodies = [...this.bubbles];
-    if (this.falling && this.falling.dropped && !this.falling.settled) {
-      allBodies.push(this.falling);
-    }
-
-    // Apply gravity to all bodies
-    for (const b of allBodies) {
-      b.vy = (b.vy || 0) + GRAVITY * dt;
-      b.vx = (b.vx || 0) * FRICTION;
-      b.x += (b.vx || 0) * dt;
-      b.y += (b.vy || 0) * dt;
-    }
-
-    // Wall collisions for all
-    for (const b of allBodies) {
-      if (b.x - r < 0) { b.x = r; b.vx = Math.abs(b.vx || 0) * BOUNCE_DAMPING; }
-      if (b.x + r > this.W) { b.x = this.W - r; b.vx = -Math.abs(b.vx || 0) * BOUNCE_DAMPING; }
-    }
-
-    // Terrain collisions for all
-    for (const b of allBodies) {
-      const terrainY = this.getTerrainY(b.x);
-      if (b.y + r >= terrainY) {
-        b.y = terrainY - r;
-        const { nx, ny } = this.getTerrainNormal(b.x);
-        const dot = (b.vx || 0) * nx + (b.vy || 0) * ny;
-        if (dot < 0) {
-          b.vx -= 2 * dot * nx * BOUNCE_DAMPING;
-          b.vy -= 2 * dot * ny * BOUNCE_DAMPING;
-        }
-        // Slope slide
-        const slopeX = -ny; // tangent direction
-        b.vx += slopeX * GRAVITY * 0.5 * dt;
-      }
-    }
-
-    // Bubble-vs-bubble collisions (all pairs, with momentum transfer)
-    for (let i = 0; i < allBodies.length; i++) {
-      for (let j = i + 1; j < allBodies.length; j++) {
-        const a = allBodies[i];
-        const b = allBodies[j];
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const minDist = r * 2;
-
-        if (dist < minDist && dist > 0.1) {
-          const overlap = minDist - dist;
-          const nx = dx / dist;
-          const ny = dy / dist;
-
-          // Push apart firmly (no overlap allowed)
-          a.x -= nx * overlap * 0.55;
-          a.y -= ny * overlap * 0.55;
-          b.x += nx * overlap * 0.55;
-          b.y += ny * overlap * 0.55;
-
-          // Relative velocity
-          const dvx = (b.vx || 0) - (a.vx || 0);
-          const dvy = (b.vy || 0) - (a.vy || 0);
-          const dvDot = dvx * nx + dvy * ny;
-
-          // Resolve collision - high restitution, no stickiness
-          if (dvDot < 0) {
-            const restitution = 0.75;
-            const impulse = dvDot * (1 + restitution) * 0.5;
-            a.vx = (a.vx || 0) + impulse * nx;
-            a.vy = (a.vy || 0) + impulse * ny;
-            b.vx = (b.vx || 0) - impulse * nx;
-            b.vy = (b.vy || 0) - impulse * ny;
-
-            // Add slight lateral scatter so balls don't stack perfectly
-            const scatter = 0.3;
-            a.vx += (Math.random() - 0.5) * scatter;
-            b.vx += (Math.random() - 0.5) * scatter;
-          }
-        }
-      }
-    }
-
-    // Check if falling bubble has come to rest → settle it
-    if (this.falling && this.falling.dropped && !this.falling.settled) {
-      const f = this.falling;
-      const speed = Math.sqrt((f.vx || 0) ** 2 + (f.vy || 0) ** 2);
-      const terrainY = this.getTerrainY(f.x);
-      const onGround = f.y + r >= terrainY - 1;
-      const onBubble = this.bubbles.some(b => {
-        const d = Math.sqrt((f.x - b.x) ** 2 + (f.y - b.y) ** 2);
-        return d < r * 2.2 && f.y < b.y;
-      });
-
-      if (speed < SETTLE_SPEED && (onGround || onBubble)) {
-        this.settleBubble(f);
-      }
-    }
-
-    // Settled bubbles damping - only freeze when truly still
+    // Sync bubble positions from Matter.js bodies
     for (const b of this.bubbles) {
-      const speed = Math.sqrt((b.vx || 0) ** 2 + (b.vy || 0) ** 2);
-      if (speed < SETTLE_SPEED * 0.5) {
-        b.vx = 0;
-        b.vy = 0;
-      }
+      b.x = b.body.position.x;
+      b.y = b.body.position.y;
       if (b.settleTimer > 0) {
         b.settleTimer -= dt;
         b.scale = 1 + Math.sin(b.settleTimer * 0.5) * 0.08;
@@ -448,27 +382,42 @@ class BubblePopTower {
       }
     }
 
+    // Check if falling bubble has settled
+    if (this.falling && this.falling.dropped && this.falling.body) {
+      const body = this.falling.body;
+      this.falling.x = body.position.x;
+      this.falling.y = body.position.y;
+      const speed = body.speed;
+
+      if (speed < 0.5) {
+        this.falling.settleCounter = (this.falling.settleCounter || 0) + dt;
+        if (this.falling.settleCounter > 8) {
+          this.settleBubble(this.falling);
+        }
+      } else {
+        this.falling.settleCounter = 0;
+      }
+    }
+
     // Terrain shifting
     if (this.terrainShifting) {
       this.terrainShiftTimer += dt * 0.03;
       if (this.terrainShiftTimer >= 1) {
-        // Shift complete
         this.terrainShifting = false;
         this.terrainShiftTimer = 0;
         this.terrainHeights = this.newTerrainHeights;
         this.oldTerrainHeights = null;
         this.newTerrainHeights = null;
-        // Give all bubbles a kick so they resettle on new terrain
-        for (const b of this.bubbles) {
-          b.vy = (b.vy || 0) + 2;
-        }
+        this.buildTerrainBodies();
+        // Wake all bubbles
+        for (const b of this.bubbles) Body.setVelocity(b.body, { x: 0, y: 2 });
       } else {
-        // Interpolate terrain during shift
         const t = this.terrainShiftTimer;
-        const smooth = t * t * (3 - 2 * t); // smoothstep
+        const smooth = t * t * (3 - 2 * t);
         for (let x = 0; x <= this.W; x++) {
           this.terrainHeights[x] = this.oldTerrainHeights[x] + (this.newTerrainHeights[x] - this.oldTerrainHeights[x]) * smooth;
         }
+        this.buildTerrainBodies();
       }
     }
 
@@ -480,10 +429,7 @@ class BubblePopTower {
         this.quakeActive = 40;
         this.quakeTimer = 0;
         this.playTone(80, 0.4, 'sawtooth');
-        this.floatingTexts.push({
-          x: this.W / 2, y: this.H * 0.3,
-          text: '🌋 EARTHQUAKE!', combo: '', life: 1.2,
-        });
+        this.floatingTexts.push({ x: this.W / 2, y: this.H * 0.3, text: '🌋 EARTHQUAKE!', combo: '', life: 1.2 });
       }
     }
 
@@ -493,48 +439,53 @@ class BubblePopTower {
       this.quakeOffsetX = (Math.random() - 0.5) * diff.quakeForce * 2 * intensity;
       this.quakeOffsetY = (Math.random() - 0.5) * diff.quakeForce * intensity;
 
-      // Kick all settled bubbles with real velocity
       for (const b of this.bubbles) {
-        b.vx = (b.vx || 0) + (Math.random() - 0.5) * diff.quakeForce * 0.8 * dt;
-        b.vy = (b.vy || 0) - Math.random() * diff.quakeForce * 0.3 * dt;
+        Body.applyForce(b.body, b.body.position, {
+          x: (Math.random() - 0.5) * diff.quakeForce * 0.002,
+          y: -Math.random() * diff.quakeForce * 0.001,
+        });
       }
 
       if (this.quakeActive <= 0) {
         this.quakeOffsetX = 0;
         this.quakeOffsetY = 0;
-        // After quake settles, check for matches
         setTimeout(() => {
           if (this.running && !this.falling) this.processMatches(null);
         }, 600);
       }
     }
 
-    // Particles
+    // Periodic match check when idle
+    if (!this.falling && !this.gameOver && this.bubbles.length >= MATCH_MIN) {
+      this.idleMatchTimer = (this.idleMatchTimer || 0) + dt;
+      if (this.idleMatchTimer > 30) {
+        this.idleMatchTimer = 0;
+        const matched = this.findMatches();
+        if (matched.length >= MATCH_MIN) {
+          this.combo = 0;
+          this.processMatches(null);
+        }
+      }
+    } else {
+      this.idleMatchTimer = 0;
+    }
+
+    // Particles & floating texts
     this.particles = this.particles.filter(p => {
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vy += 0.1 * dt;
-      p.life -= 0.025 * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 0.1 * dt; p.life -= 0.025 * dt;
       return p.life > 0;
     });
-
-    // Floating texts
     this.floatingTexts = this.floatingTexts.filter(t => {
-      t.y -= 1.2 * dt;
-      t.life -= 0.02 * dt;
+      t.y -= 1.2 * dt; t.life -= 0.02 * dt;
       return t.life > 0;
     });
   }
 
   settleBubble(f) {
-    if (f.settled) return;
-    f.settled = true;
-
     const bubble = {
-      x: f.x,
-      y: f.y,
-      vx: (f.vx || 0) * 0.3,
-      vy: (f.vy || 0) * 0.3,
+      body: f.body,
+      x: f.body.position.x,
+      y: f.body.position.y,
       radius: this.bubbleRadius,
       color: f.color,
       scale: 1,
@@ -545,13 +496,11 @@ class BubblePopTower {
     this.bubbles.push(bubble);
     this.falling = null;
 
-    // Terrain shift check
     this.turnsSinceTerrain++;
     if (this.turnsSinceTerrain >= this.nextTerrainShift && !this.terrainShifting) {
       this.shiftTerrain();
     }
 
-    // Check for matches after physics settle a bit
     setTimeout(() => {
       if (!this.running) return;
       this.combo = 0;
@@ -561,14 +510,12 @@ class BubblePopTower {
 
   shiftTerrain() {
     this.turnsSinceTerrain = 0;
-    this.nextTerrainShift = 4 + Math.floor(Math.random() * 5); // 4-8
+    this.nextTerrainShift = 4 + Math.floor(Math.random() * 5);
 
-    // Pick a different terrain
     const currentName = this.terrainProfile.name;
     const others = TERRAIN_PROFILES.filter(t => t.name !== currentName);
     this.terrainProfile = others[Math.floor(Math.random() * others.length)];
 
-    // Set up interpolation
     this.oldTerrainHeights = new Float32Array(this.terrainHeights);
     this.newTerrainHeights = new Float32Array(Math.ceil(this.W) + 1);
     for (let x = 0; x <= this.W; x++) {
@@ -579,16 +526,14 @@ class BubblePopTower {
     this.terrainShiftTimer = 0;
 
     this.playTone(150, 0.3, 'sawtooth');
-    this.floatingTexts.push({
-      x: this.W / 2, y: this.H * 0.4,
-      text: `⛰️ ${this.terrainProfile.name}!`, combo: '', life: 1.5,
-    });
+    this.floatingTexts.push({ x: this.W / 2, y: this.H * 0.4, text: `⛰️ ${this.terrainProfile.name}!`, combo: '', life: 1.5 });
   }
+
+  // ─── MATCHING & SCORING ─────────────────────────────────────────
 
   processMatches(trigger) {
     if (this.gameOver) return;
 
-    // Handle powerup
     if (trigger && trigger.color.isPowerup) {
       this.activatePowerup(trigger);
       return;
@@ -603,34 +548,25 @@ class BubblePopTower {
       this.score += points;
       this.totalPopped += matched.length;
 
-      // Spawn particles and floating text
       let cx = 0, cy = 0;
       const matchedSet = new Set(matched.map(b => b.id));
       for (const b of matched) {
-        cx += b.x;
-        cy += b.y;
+        cx += b.x; cy += b.y;
         this.spawnPopParticles(b.x, b.y, b.color.hex);
+        Composite.remove(this.world, b.body);
       }
-      cx /= matched.length;
-      cy /= matched.length;
+      cx /= matched.length; cy /= matched.length;
 
       this.floatingTexts.push({
-        x: cx,
-        y: cy,
+        x: cx, y: cy,
         text: `+${points}`,
         combo: this.combo > 1 ? `${this.combo}x COMBO!` : '',
         life: 1,
       });
-
       this.playPop(matched.length);
 
-      // Remove matched
       this.bubbles = this.bubbles.filter(b => !matchedSet.has(b.id));
 
-      // Apply gravity to remaining bubbles
-      this.applyGravity();
-
-      // Check for chain reactions
       setTimeout(() => {
         if (!this.running) return;
         this.processMatches(null);
@@ -638,7 +574,6 @@ class BubblePopTower {
 
       this.updateHUD();
     } else {
-      // No more matches - check game over, then spawn next
       if (this.checkGameOver()) return;
       this.combo = 0;
       this.spawnFalling();
@@ -666,7 +601,6 @@ class BubblePopTower {
         visited.add(current.id);
         group.push(current);
 
-        // Find neighbors of same color
         for (const other of this.bubbles) {
           if (groupVisited.has(other.id)) continue;
           if (other.color.isPowerup) continue;
@@ -675,7 +609,7 @@ class BubblePopTower {
           const dx = current.x - other.x;
           const dy = current.y - other.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < r * 2.5) {
+          if (dist < r * 4) {
             stack.push(other);
           }
         }
@@ -692,97 +626,78 @@ class BubblePopTower {
   activatePowerup(bubble) {
     const type = bubble.color.type;
     const idx = this.bubbles.indexOf(bubble);
-    if (idx !== -1) this.bubbles.splice(idx, 1);
+    if (idx !== -1) {
+      Composite.remove(this.world, bubble.body);
+      this.bubbles.splice(idx, 1);
+    }
 
     if (type === 'bomb') {
       this.playBomb();
       const blastR = this.bubbleRadius * 5;
       const toRemove = [];
-      // Blast: remove nearby, push away the rest
       for (const b of this.bubbles) {
         const dx = b.x - bubble.x;
         const dy = b.y - bubble.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < blastR) {
           toRemove.push(b);
-        } else if (dist < blastR * 2) {
-          // Shockwave pushes nearby bubbles
-          const force = (1 - dist / (blastR * 2)) * 8;
-          b.vx = (b.vx || 0) + (dx / dist) * force;
-          b.vy = (b.vy || 0) + (dy / dist) * force - 2;
+        } else if (dist < blastR * 2 && dist > 0) {
+          const force = (1 - dist / (blastR * 2)) * 0.05;
+          Body.applyForce(b.body, b.body.position, { x: (dx / dist) * force, y: (dy / dist) * force - 0.02 });
         }
       }
       const points = toRemove.length * 15;
       this.score += points;
       this.totalPopped += toRemove.length;
       const removeSet = new Set(toRemove.map(b => b.id));
-      toRemove.forEach(b => this.spawnPopParticles(b.x, b.y, b.color.hex || '#ff8800'));
+      toRemove.forEach(b => { this.spawnPopParticles(b.x, b.y, b.color.hex || '#ff8800'); Composite.remove(this.world, b.body); });
       this.bubbles = this.bubbles.filter(b => !removeSet.has(b.id));
       this.floatingTexts.push({ x: bubble.x, y: bubble.y, text: `💣 +${points}`, combo: '', life: 1 });
 
-      // Big explosion particles
       for (let i = 0; i < 20; i++) {
         const angle = (Math.PI * 2 * i) / 20;
         this.particles.push({
           x: bubble.x, y: bubble.y,
           vx: Math.cos(angle) * (3 + Math.random() * 3),
           vy: Math.sin(angle) * (3 + Math.random() * 3),
-          life: 1,
-          color: '#ff8800',
-          size: 6 + Math.random() * 4,
+          life: 1, color: '#ff8800', size: 6 + Math.random() * 4,
         });
       }
     } else if (type === 'rainbow') {
-      // Find the most common color touching and match all of that color
       const neighbors = this.bubbles.filter(b => {
-        const dx = b.x - bubble.x;
-        const dy = b.y - bubble.y;
-        return Math.sqrt(dx * dx + dy * dy) < this.bubbleRadius * 3 && !b.color.isPowerup;
+        const dx = b.x - bubble.x, dy = b.y - bubble.y;
+        return Math.sqrt(dx * dx + dy * dy) < this.bubbleRadius * 4 && !b.color.isPowerup;
       });
-
       if (neighbors.length > 0) {
-        // Count colors
         const counts = {};
-        neighbors.forEach(b => {
-          counts[b.color.name] = (counts[b.color.name] || 0) + 1;
-        });
+        neighbors.forEach(b => { counts[b.color.name] = (counts[b.color.name] || 0) + 1; });
         const targetColor = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
         const toRemove = this.bubbles.filter(b => b.color.name === targetColor);
         const points = toRemove.length * 20;
         this.score += points;
         this.totalPopped += toRemove.length;
-        toRemove.forEach(b => this.spawnPopParticles(b.x, b.y, b.color.hex));
+        toRemove.forEach(b => { this.spawnPopParticles(b.x, b.y, b.color.hex); Composite.remove(this.world, b.body); });
         this.bubbles = this.bubbles.filter(b => b.color.name !== targetColor);
         this.floatingTexts.push({ x: bubble.x, y: bubble.y, text: `🌈 +${points}`, combo: '', life: 1 });
         this.playPop(toRemove.length);
       }
     } else if (type === 'star') {
-      // Clear the row at this Y level
       const rowH = this.bubbleRadius * 2.5;
       const toRemove = this.bubbles.filter(b => Math.abs(b.y - bubble.y) < rowH);
       const points = toRemove.length * 15;
       this.score += points;
       this.totalPopped += toRemove.length;
-      toRemove.forEach(b => this.spawnPopParticles(b.x, b.y, b.color.hex || '#ffd166'));
+      toRemove.forEach(b => { this.spawnPopParticles(b.x, b.y, b.color.hex || '#ffd166'); Composite.remove(this.world, b.body); });
       this.bubbles = this.bubbles.filter(b => !toRemove.includes(b));
       this.floatingTexts.push({ x: bubble.x, y: bubble.y, text: `⭐ +${points}`, combo: '', life: 1 });
       this.playPop(toRemove.length);
     }
 
-    this.applyGravity();
     this.updateHUD();
-
     setTimeout(() => {
       if (!this.running) return;
       this.processMatches(null);
     }, 400);
-  }
-
-  applyGravity() {
-    // Give all bubbles a small downward kick so physics resolves naturally
-    for (const b of this.bubbles) {
-      b.vy = (b.vy || 0) + 1;
-    }
   }
 
   spawnPopParticles(x, y, color) {
@@ -792,9 +707,7 @@ class BubblePopTower {
         x, y,
         vx: Math.cos(angle) * (2 + Math.random() * 2),
         vy: Math.sin(angle) * (2 + Math.random() * 2) - 1,
-        life: 1,
-        color,
-        size: 3 + Math.random() * 4,
+        life: 1, color, size: 3 + Math.random() * 4,
       });
     }
   }
@@ -814,9 +727,7 @@ class BubblePopTower {
       const titles = ['Game Over!', 'Nice Tower!', 'Great Run!', 'So Close!', 'Wow!'];
       document.getElementById('goTitle').textContent = titles[Math.floor(Math.random() * titles.length)];
 
-      setTimeout(() => {
-        this.gameOverOverlay.classList.add('active');
-      }, 600);
+      setTimeout(() => { this.gameOverOverlay.classList.add('active'); }, 600);
       return true;
     }
     return false;
@@ -828,11 +739,8 @@ class BubblePopTower {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.W, this.H);
 
-    // Apply earthquake screen shake
     ctx.save();
-    if (this.quakeActive > 0) {
-      ctx.translate(this.quakeOffsetX, this.quakeOffsetY);
-    }
+    if (this.quakeActive > 0) ctx.translate(this.quakeOffsetX, this.quakeOffsetY);
 
     // Background
     const bgGrad = ctx.createLinearGradient(0, 0, 0, this.H);
@@ -841,43 +749,32 @@ class BubblePopTower {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(-10, -10, this.W + 20, this.H + 20);
 
-    // Grid lines (subtle)
+    // Grid
     ctx.strokeStyle = 'rgba(255,255,255,0.03)';
     ctx.lineWidth = 1;
     const gridSize = this.bubbleRadius * 2;
     for (let x = gridSize; x < this.W; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, this.H);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.H); ctx.stroke();
     }
 
-    // Draw terrain
     this.drawTerrain(ctx);
 
     // Danger line
     const dangerAlpha = this.bubbles.some(b => b.y - b.radius < this.dangerLine + this.bubbleRadius * 3)
-      ? 0.6 + Math.sin(performance.now() * 0.008) * 0.3
-      : 0.15;
+      ? 0.6 + Math.sin(performance.now() * 0.008) * 0.3 : 0.15;
     ctx.strokeStyle = `rgba(233,69,96,${dangerAlpha})`;
     ctx.lineWidth = 2;
     ctx.setLineDash([8, 8]);
-    ctx.beginPath();
-    ctx.moveTo(0, this.dangerLine);
-    ctx.lineTo(this.W, this.dangerLine);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, this.dangerLine); ctx.lineTo(this.W, this.dangerLine); ctx.stroke();
     ctx.setLineDash([]);
 
-    // Draw aim guide for falling bubble
+    // Aim guide
     if (this.falling && !this.falling.dropped) {
       const aimX = Math.max(this.bubbleRadius, Math.min(this.W - this.bubbleRadius, this.aimX));
       ctx.strokeStyle = 'rgba(255,255,255,0.15)';
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(aimX, this.falling.y);
-      ctx.lineTo(aimX, this.getTerrainY(aimX));
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(aimX, this.falling.y); ctx.lineTo(aimX, this.getTerrainY(aimX)); ctx.stroke();
       ctx.setLineDash([]);
     }
 
@@ -888,10 +785,15 @@ class BubblePopTower {
 
     // Falling bubble
     if (this.falling) {
-      const f = this.falling;
-      const drawX = f.dropped ? f.x : Math.max(f.radius, Math.min(this.W - f.radius, this.aimX));
-      const drawY = f.y;
-      this.drawBubble(ctx, drawX, drawY, f.radius, f.color);
+      let drawX, drawY;
+      if (this.falling.dropped && this.falling.body) {
+        drawX = this.falling.body.position.x;
+        drawY = this.falling.body.position.y;
+      } else {
+        drawX = Math.max(this.bubbleRadius, Math.min(this.W - this.bubbleRadius, this.aimX));
+        drawY = this.falling.y;
+      }
+      this.drawBubble(ctx, drawX, drawY, this.bubbleRadius, this.falling.color);
     }
 
     // Particles
@@ -899,9 +801,7 @@ class BubblePopTower {
       ctx.save();
       ctx.globalAlpha = Math.max(0, p.life);
       ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
 
@@ -922,30 +822,24 @@ class BubblePopTower {
       ctx.restore();
     }
 
-    // Close earthquake transform
     ctx.restore();
   }
 
   drawTerrain(ctx) {
     if (!this.terrainHeights) return;
 
-    // Terrain fill
     const tGrad = ctx.createLinearGradient(0, this.H * 0.7, 0, this.H);
     tGrad.addColorStop(0, 'rgba(30,40,70,0.9)');
     tGrad.addColorStop(1, 'rgba(20,28,50,1)');
-
     ctx.fillStyle = tGrad;
     ctx.beginPath();
     ctx.moveTo(0, this.H + 5);
     const step = 3;
-    for (let x = 0; x <= this.W; x += step) {
-      ctx.lineTo(x, this.getTerrainY(x));
-    }
+    for (let x = 0; x <= this.W; x += step) ctx.lineTo(x, this.getTerrainY(x));
     ctx.lineTo(this.W, this.H + 5);
     ctx.closePath();
     ctx.fill();
 
-    // Terrain edge highlight
     ctx.strokeStyle = 'rgba(100,140,200,0.3)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -955,60 +849,43 @@ class BubblePopTower {
     }
     ctx.stroke();
 
-    // Terrain surface dots for texture
     ctx.fillStyle = 'rgba(100,140,200,0.08)';
     for (let x = 10; x < this.W; x += 20) {
       const ty = this.getTerrainY(x);
-      ctx.beginPath();
-      ctx.arc(x, ty + 8, 2, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x, ty + 8, 2, 0, Math.PI * 2); ctx.fill();
     }
   }
 
   drawBubble(ctx, x, y, radius, color) {
     ctx.save();
-
     if (color.isPowerup) {
-      // Powerup bubble
       ctx.shadowColor = 'rgba(255,255,255,0.5)';
       ctx.shadowBlur = 12;
       ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,0.6)';
       ctx.lineWidth = 2;
       ctx.stroke();
       ctx.shadowBlur = 0;
-
       ctx.font = `${radius * 1.2}px serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(color.emoji, x, y);
     } else {
-      // Regular bubble with glow
       ctx.shadowColor = color.glow;
       ctx.shadowBlur = 10;
-
-      // Main circle
       const bGrad = ctx.createRadialGradient(x - radius * 0.3, y - radius * 0.3, radius * 0.1, x, y, radius);
       bGrad.addColorStop(0, this.lighten(color.hex, 40));
       bGrad.addColorStop(0.7, color.hex);
       bGrad.addColorStop(1, this.darken(color.hex, 30));
       ctx.fillStyle = bGrad;
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fill();
-
+      ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
       ctx.shadowBlur = 0;
-
-      // Highlight
       ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.beginPath();
       ctx.ellipse(x - radius * 0.25, y - radius * 0.3, radius * 0.35, radius * 0.2, -0.5, 0, Math.PI * 2);
       ctx.fill();
     }
-
     ctx.restore();
   }
 
@@ -1052,8 +929,7 @@ class BubblePopTower {
 
   registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js')
-        .catch(e => console.log('SW failed', e));
+      navigator.serviceWorker.register('./service-worker.js').catch(e => console.log('SW failed', e));
     }
   }
 }

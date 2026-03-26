@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Number Cruncher</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- START SCREEN -->
+  <div class="screen active" id="startScreen">
+    <div class="start-content">
+      <h1 class="start-title">Number Cruncher</h1>
+      <div class="start-emoji">🔢🎯</div>
+      <p class="start-hint">Combine numbers to hit the target!</p>
+      <div class="difficulty-picker">
+        <button class="diff-btn selected" data-diff="easy">
+          <span class="diff-icon">🟢</span>
+          <span class="diff-label">Easy</span>
+        </button>
+        <button class="diff-btn" data-diff="medium">
+          <span class="diff-icon">🟡</span>
+          <span class="diff-label">Medium</span>
+        </button>
+        <button class="diff-btn" data-diff="hard">
+          <span class="diff-icon">🔴</span>
+          <span class="diff-label">Hard</span>
+        </button>
+      </div>
+      <button class="start-btn" id="startBtn">Start!</button>
+      <div class="bottom-links">
+        <a class="menu-link" href="../">🏠 Game Menu</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="gameScreen">
+    <div class="game-header">
+      <div class="hud-left">
+        <div class="hud-item" id="hudScore">Score: 0</div>
+        <div class="hud-item" id="hudRound">Round 1</div>
+      </div>
+      <div class="hud-right">
+        <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+        <button class="pause-btn" id="pauseBtn">⏸️</button>
+      </div>
+    </div>
+
+    <div class="target-area">
+      <div class="target-label">TARGET</div>
+      <div class="target-number" id="targetNumber">24</div>
+    </div>
+
+    <div class="expression-area" id="expressionArea">
+      <div class="expression" id="expression">&nbsp;</div>
+      <div class="result-preview" id="resultPreview"></div>
+    </div>
+
+    <div class="numbers-area" id="numbersArea"></div>
+
+    <div class="ops-area">
+      <button class="op-btn" data-op="+">+</button>
+      <button class="op-btn" data-op="-">−</button>
+      <button class="op-btn" data-op="*">×</button>
+      <button class="op-btn" data-op="/">÷</button>
+    </div>
+
+    <div class="action-area">
+      <button class="action-btn" id="undoBtn">↩ Undo</button>
+      <button class="action-btn" id="clearBtn">🗑 Clear</button>
+      <button class="action-btn submit-btn" id="submitBtn">✓ Submit</button>
+    </div>
+  </div>
+
+  <!-- PAUSE OVERLAY -->
+  <div class="overlay" id="pauseOverlay">
+    <div class="overlay-content">
+      <h2>Paused</h2>
+      <button class="overlay-btn" id="resumeBtn">▶️ Resume</button>
+      <button class="overlay-btn secondary" id="homeBtn">🏠 Home</button>
+    </div>
+  </div>
+
+  <!-- ROUND RESULT OVERLAY -->
+  <div class="overlay" id="resultOverlay">
+    <div class="overlay-content">
+      <h2 id="resultTitle">Nice!</h2>
+      <p class="result-detail" id="resultDetail"></p>
+      <button class="overlay-btn" id="nextRoundBtn">Next Round →</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER OVERLAY -->
+  <div class="overlay" id="gameOverOverlay">
+    <div class="overlay-content">
+      <h2 id="goTitle">Game Over!</h2>
+      <div class="go-stats">
+        <p class="go-stat">🏆 Score: <span id="goScore">0</span></p>
+        <p class="go-stat">🎯 Rounds: <span id="goRounds">0</span></p>
+        <p class="go-stat">✅ Perfect: <span id="goPerfect">0</span></p>
+      </div>
+      <button class="overlay-btn" id="retryBtn">🔄 Play Again!</button>
+      <button class="overlay-btn secondary" id="goHomeBtn">🏠 Home</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

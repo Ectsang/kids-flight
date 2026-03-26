@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sky-pilot-v2';
+const CACHE_NAME = 'sky-pilot-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -33,7 +33,8 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
         return response;
       }).catch(() => {
-        if (event.request.headers.get('accept').includes('text/html')) {
+        const accept = event.request.headers.get('accept') || '';
+        if (accept.includes('text/html')) {
           return caches.match('./index.html');
         }
       });

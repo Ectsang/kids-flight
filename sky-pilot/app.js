@@ -213,18 +213,10 @@ class SkyPilot {
     this.clouds = [];
     this.collectibles = [];
     this.particles = [];
-    this.bgClouds = [];
 
-    // Spawn initial background clouds
-    for (let i = 0; i < 8; i++) {
-      this.bgClouds.push({
-        x: Math.random() * this.W,
-        y: Math.random() * this.H,
-        size: 30 + Math.random() * 50,
-        speed: 0.3 + Math.random() * 0.5,
-        opacity: 0.15 + Math.random() * 0.2,
-      });
-    }
+    // Background buildings/mountains
+    this.bgBuildings = [];
+    this.generateBuildings();
 
     // Timers for spawning
     this.cloudTimer = 0;
@@ -266,6 +258,29 @@ class SkyPilot {
     this.gameOverOverlay.classList.remove('active');
     this.gameScreen.classList.remove('active');
     this.startScreen.classList.add('active');
+  }
+
+  generateBuildings() {
+    this.bgBuildings = [];
+    // Near layer (darker, taller)
+    for (let x = 0; x < this.W + 200; x += 40 + Math.random() * 60) {
+      const h = 60 + Math.random() * 120;
+      this.bgBuildings.push({
+        x, w: 30 + Math.random() * 50, h,
+        layer: 0, speed: 0.6,
+        color: 'rgba(20,25,40,0.7)',
+      });
+    }
+    // Far layer (lighter, shorter = mountains/distant buildings)
+    for (let x = 0; x < this.W + 200; x += 80 + Math.random() * 100) {
+      const h = 40 + Math.random() * 80;
+      this.bgBuildings.push({
+        x, w: 60 + Math.random() * 80, h,
+        layer: 1, speed: 0.3,
+        color: 'rgba(30,40,60,0.4)',
+        isMountain: Math.random() > 0.5,
+      });
+    }
   }
 
   // ─── GAME LOOP ─────────────────────────────────────────────────
@@ -351,12 +366,14 @@ class SkyPilot {
     });
     this.collectibles = this.collectibles.filter(c => c.x > -40);
 
-    // Move bg clouds
-    this.bgClouds.forEach(c => {
-      c.x -= c.speed * dt;
-      if (c.x < -c.size) {
-        c.x = this.W + c.size;
-        c.y = Math.random() * this.H;
+    // Move bg buildings
+    this.bgBuildings.forEach(b => {
+      b.x -= b.speed * dt;
+      if (b.x + b.w < -10) {
+        b.x = this.W + 20 + Math.random() * 100;
+        b.h = (b.layer === 0 ? 60 : 40) + Math.random() * (b.layer === 0 ? 120 : 80);
+        b.w = (b.layer === 0 ? 30 : 60) + Math.random() * (b.layer === 0 ? 50 : 80);
+        b.isMountain = b.layer === 1 && Math.random() > 0.5;
       }
     });
 
@@ -563,27 +580,49 @@ class SkyPilot {
     // Sky gradient based on distance
     this.drawSky(ctx);
 
-    // Background clouds
-    ctx.save();
-    this.bgClouds.forEach(c => {
-      ctx.globalAlpha = c.opacity;
-      ctx.font = `${c.size}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('☁️', c.x, c.y);
-    });
-    ctx.restore();
+    // Background buildings/mountains (far layer first)
+    for (const layer of [1, 0]) {
+      this.bgBuildings.filter(b => b.layer === layer).forEach(b => {
+        ctx.fillStyle = b.color;
+        if (b.isMountain) {
+          ctx.beginPath();
+          ctx.moveTo(b.x, this.H);
+          ctx.lineTo(b.x + b.w / 2, this.H - b.h);
+          ctx.lineTo(b.x + b.w, this.H);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillRect(b.x, this.H - b.h, b.w, b.h);
+          // Windows on near buildings
+          if (b.layer === 0) {
+            ctx.fillStyle = 'rgba(255,220,100,0.15)';
+            for (let wy = this.H - b.h + 10; wy < this.H - 10; wy += 18) {
+              for (let wx = b.x + 6; wx < b.x + b.w - 6; wx += 14) {
+                ctx.fillRect(wx, wy, 6, 8);
+              }
+            }
+          }
+        }
+      });
+    }
 
-    // Ground line (simple horizon)
-    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    // Ground line
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
     ctx.fillRect(0, this.H - 3, this.W, 3);
 
-    // Clouds
+    // Clouds (obstacles) - with dark outline for visibility
     this.clouds.forEach(c => {
+      ctx.save();
       ctx.font = `${c.size}px serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+      // Dark shadow behind cloud for contrast
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
       ctx.fillText(c.emoji, c.x, c.y);
+      ctx.restore();
     });
 
     // Collectibles (bobbing)

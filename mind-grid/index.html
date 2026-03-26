@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Mind Grid</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- START SCREEN -->
+  <div class="screen active" id="startScreen">
+    <div class="start-content">
+      <h1 class="start-title">Mind Grid</h1>
+      <div class="start-emoji">🧠🔲</div>
+      <p class="start-hint">Memorize the pattern, then recreate it!</p>
+      <div class="difficulty-picker">
+        <button class="diff-btn selected" data-diff="easy">
+          <span class="diff-icon">🟢</span>
+          <span class="diff-label">Easy</span>
+        </button>
+        <button class="diff-btn" data-diff="medium">
+          <span class="diff-icon">🟡</span>
+          <span class="diff-label">Medium</span>
+        </button>
+        <button class="diff-btn" data-diff="hard">
+          <span class="diff-icon">🔴</span>
+          <span class="diff-label">Hard</span>
+        </button>
+      </div>
+      <button class="start-btn" id="startBtn">Start!</button>
+      <div class="bottom-links">
+        <a class="menu-link" href="../">🏠 Game Menu</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="screen" id="gameScreen">
+    <div class="game-header">
+      <div class="hud-item" id="hudScore">Score: 0</div>
+      <div class="hud-item" id="hudLevel">Level 1</div>
+      <div class="hud-item" id="hudLives">❤️❤️❤️</div>
+      <button class="pause-btn" id="pauseBtn">⏸️</button>
+    </div>
+
+    <div class="phase-label" id="phaseLabel">Memorize!</div>
+
+    <div class="grid-container" id="gridContainer"></div>
+
+    <div class="game-footer">
+      <button class="action-btn" id="submitGuess" style="display:none">✓ Check</button>
+    </div>
+  </div>
+
+  <!-- PAUSE OVERLAY -->
+  <div class="overlay" id="pauseOverlay">
+    <div class="overlay-content">
+      <h2>Paused</h2>
+      <button class="overlay-btn" id="resumeBtn">▶️ Resume</button>
+      <button class="overlay-btn secondary" id="homeBtn">🏠 Home</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER OVERLAY -->
+  <div class="overlay" id="gameOverOverlay">
+    <div class="overlay-content">
+      <h2 id="goTitle">Game Over!</h2>
+      <div class="go-stats">
+        <p class="go-stat">🏆 Score: <span id="goScore">0</span></p>
+        <p class="go-stat">📈 Level Reached: <span id="goLevel">0</span></p>
+        <p class="go-stat">🎯 Perfect Rounds: <span id="goPerfect">0</span></p>
+      </div>
+      <button class="overlay-btn" id="retryBtn">🔄 Play Again!</button>
+      <button class="overlay-btn secondary" id="goHomeBtn">🏠 Home</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

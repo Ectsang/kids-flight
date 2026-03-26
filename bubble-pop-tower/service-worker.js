@@ -1,8 +1,9 @@
-const CACHE_NAME = 'bubble-pop-tower-v4';
+const CACHE_NAME = 'bubble-pop-tower-v8';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
+  './matter.min.js',
   './app.js',
   './manifest.webmanifest'
 ];
@@ -25,15 +26,17 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request.clone()).then(response => {
-        if (!response || response.status !== 200 || response.type !== 'basic') return response;
+    fetch(event.request).then(response => {
+      if (response && response.status === 200 && response.type === 'basic') {
         const toCache = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
-        return response;
-      }).catch(() => {
-        if (event.request.headers.get('accept').includes('text/html')) {
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        const accept = event.request.headers.get('accept') || '';
+        if (accept.includes('text/html')) {
           return caches.match('./index.html');
         }
       });
