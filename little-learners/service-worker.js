@@ -1,4 +1,4 @@
-const CACHE_NAME = 'little-learners-v2';
+const CACHE_NAME = 'little-learners-@@CACHE_STAMP@@';
 const ASSETS = [
   './',
   './index.html',
@@ -18,7 +18,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k.startsWith('little-learners-') && k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });

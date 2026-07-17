@@ -1,3 +1,0 @@
-Icon placeholder: 192x192
-Open icons.html in your browser to generate actual PNGs.
-Right-click each canvas and "Save Image As..."

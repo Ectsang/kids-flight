@@ -1,4 +1,4 @@
-const CACHE_NAME = 'animal-tap-parade-v2';
+const CACHE_NAME = 'animal-tap-parade-@@CACHE_STAMP@@';
 const ASSETS = [
   './',
   './index.html',
@@ -25,7 +25,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames
-          .filter(name => name !== CACHE_NAME)
+          .filter(name => name.startsWith('animal-tap-parade-') && name !== CACHE_NAME)
           .map(name => caches.delete(name))
       );
     }).then(() => self.clients.claim())

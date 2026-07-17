@@ -1,0 +1,25 @@
+{
+  "name": "Kids Flight Games",
+  "short_name": "Kids Flight",
+  "description": "Offline-first games for kids to play on flights.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#87CEEB",
+  "theme_color": "#87CEEB",
+  "categories": ["games", "kids"],
+  "icons": [
+    {
+      "src": "animal-tap-parade/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "animal-tap-parade/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "en-US"
+}

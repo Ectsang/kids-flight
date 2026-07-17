@@ -12,6 +12,8 @@ Offline-first games for kids to play on flights. Each game is a standalone PWA t
 | [Little Learners](little-learners/) | 2-5 | Five learning worlds: shapes, letters, colors, numbers, and patterns |
 | [Sky Pilot](sky-pilot/) | 2-6 | Tap to fly through the sky, collect stars, dodge clouds |
 | [Bubble Pop Tower](bubble-pop-tower/) | 4+ | Physics-based bubble matching puzzle with combos and powerups |
+| [Mind Grid](mind-grid/) | 6+ | Memorize patterns and recreate them! Working memory training |
+| [Number Cruncher](number-cruncher/) | 8+ | Combine numbers to hit the target! Mental math brain training |
 
 ## Features
 

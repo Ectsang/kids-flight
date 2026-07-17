@@ -288,10 +288,20 @@ class MindGrid {
 
     this.gameOverOverlay.classList.add('active');
   }
+
+  // ─── SERVICE WORKER ────────────────────────────────────────────
+
+  registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js')
+        .catch(e => console.log('SW failed', e));
+    }
+  }
 }
 
 // ─── BOOT ────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
   window.game = new MindGrid();
+  window.game.registerServiceWorker();
 });

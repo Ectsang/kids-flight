@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bubble-pop-tower-v8';
+const CACHE_NAME = 'bubble-pop-tower-@@CACHE_STAMP@@';
 const ASSETS = [
   './',
   './index.html',
@@ -19,7 +19,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k.startsWith('bubble-pop-tower-') && k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
