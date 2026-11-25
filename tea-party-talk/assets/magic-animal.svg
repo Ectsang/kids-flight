@@ -1,11 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img">
-      <rect width="800" height="500" rx="28" fill="#E8E1F1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img"><defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eee8f4"/><stop offset="1" stop-color="#ccc6d4"/></linearGradient>
+      <pattern id="grain" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.2" fill="#6B5644" opacity=".08"/><circle cx="17" cy="15" r=".8" fill="#FFFFFF" opacity=".25"/></pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#352D35" flood-opacity=".16"/></filter>
+    </defs>
+      <rect width="800" height="500" rx="28" fill="url(#bg)"/>
       <circle cx="90" cy="80" r="45" fill="#FFFFFF" opacity=".22"/><circle cx="720" cy="65" r="65" fill="#FFFFFF" opacity=".18"/>
-      <g transform="translate(400 260) scale(1.5)"><g>
+      <g filter="url(#shadow)" transform="translate(400 260) scale(1.5)"><g>
       <path d="M-48-35H40L32 38Q0 65-32 38Z" fill="#B477A8"/>
       <path d="M40-20h18q32 0 24 30T32 30" fill="none" stroke="#B477A8" stroke-width="12"/>
       <ellipse cx="-4" cy="-35" rx="44" ry="12" fill="#F8F2E7"/><ellipse cx="-4" cy="-34" rx="35" ry="8" fill="#9B6549"/>
-    </g></g><path d="M250 106.6l6.5 16.900000000000002 16.900000000000002 6.5-16.900000000000002 6.5-6.5 16.900000000000002-6.5-16.900000000000002-16.900000000000002-6.5 16.900000000000002-6.5Z" fill="#E7B84F"/><path d="M545 85.2l5.5 14.3 14.3 5.5-14.3 5.5-5.5 14.3-5.5-14.3-14.3-5.5 14.3-5.5Z" fill="#E7B84F"/><path d="M620 243.8l4.5 11.700000000000001 11.700000000000001 4.5-11.700000000000001 4.5-4.5 11.700000000000001-4.5-11.700000000000001-11.700000000000001-4.5 11.700000000000001-4.5Z" fill="#E7B84F"/><path d="M180 267l5 13 13 5-13 5-5 13-5-13-13-5 13-5Z" fill="#E7B84F"/><g transform="translate(170 340) scale(.45)"><circle r="65" fill="#D9824B"/><path d="M-55-35-45-85-10-50M55-35 45-85 10-50" fill="#D9824B"/><circle cx="-20" r="6"/><circle cx="20" r="6"/></g><g transform="translate(620 390) scale(0.4)">
+    </g></g><path d="M250 106.6l6.5 16.900000000000002 16.900000000000002 6.5-16.900000000000002 6.5-6.5 16.900000000000002-6.5-16.900000000000002-16.900000000000002-6.5 16.900000000000002-6.5Z" fill="#E7B84F"/><path d="M545 85.2l5.5 14.3 14.3 5.5-14.3 5.5-5.5 14.3-5.5-14.3-14.3-5.5 14.3-5.5Z" fill="#E7B84F"/><path d="M620 243.8l4.5 11.700000000000001 11.700000000000001 4.5-11.700000000000001 4.5-4.5 11.700000000000001-4.5-11.700000000000001-11.700000000000001-4.5 11.700000000000001-4.5Z" fill="#E7B84F"/><path d="M180 267l5 13 13 5-13 5-5 13-5-13-13-5 13-5Z" fill="#E7B84F"/><g filter="url(#shadow)" transform="translate(170 340) scale(.45)"><circle r="65" fill="#D9824B"/><path d="M-55-35-45-85-10-50M55-35 45-85 10-50" fill="#D9824B"/><circle cx="-20" r="6"/><circle cx="20" r="6"/></g><g filter="url(#shadow)" transform="translate(620 390) scale(0.4)">
       <ellipse cx="-28" cy="-88" rx="23" ry="67" fill="#D9D2E8" transform="rotate(-10 -28 -88)"/>
       <ellipse cx="28" cy="-88" rx="23" ry="67" fill="#D9D2E8" transform="rotate(10 28 -88)"/>
       <ellipse cx="-28" cy="-90" rx="10" ry="44" fill="#F0BFC4"/><ellipse cx="28" cy="-90" rx="10" ry="44" fill="#F0BFC4"/>
@@ -17,4 +21,4 @@
       <ellipse cx="-55" cy="105" rx="19" ry="53" fill="#D9D2E8" transform="rotate(25 -55 105)"/>
       <ellipse cx="55" cy="105" rx="19" ry="53" fill="#D9D2E8" transform="rotate(-25 55 105)"/>
     </g>
-    </svg>
+    <rect width="800" height="500" rx="28" fill="url(#grain)" pointer-events="none"/></svg>

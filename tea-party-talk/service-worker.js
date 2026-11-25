@@ -5,6 +5,7 @@ const CARD_IDS = [
   'spilled-tea', 'crying-bear', 'pink-balloon', 'broken-tower', 'new-friend', 'sharing-cookies',
   'magic-animal', 'flying-cup', 'tiny-door', 'moon-picnic', 'talking-teddy', 'cloud-shapes'
 ];
+const PHOTO_IDS = ['tea-snack', 'rainy-walk', 'pink-balloon', 'broken-tower', 'sharing-cookies', 'cloud-shapes'];
 const ASSETS = [
   './',
   './index.html',
@@ -14,7 +15,7 @@ const ASSETS = [
   './manifest.webmanifest',
   '../animal-tap-parade/assets/icons/icon-192.png',
   '../animal-tap-parade/assets/icons/icon-512.png',
-  ...CARD_IDS.map(id => `./assets/${id}.svg`)
+  ...CARD_IDS.map(id => `./assets/${id}.${PHOTO_IDS.includes(id) ? 'jpg' : 'svg'}`)
 ];
 
 self.addEventListener('install', (event) => {

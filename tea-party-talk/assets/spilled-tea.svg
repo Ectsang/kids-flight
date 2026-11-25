@@ -1,7 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img">
-      <rect width="800" height="500" rx="28" fill="#F8E3D6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img"><defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#faeae0"/><stop offset="1" stop-color="#dac8bc"/></linearGradient>
+      <pattern id="grain" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.2" fill="#6B5644" opacity=".08"/><circle cx="17" cy="15" r=".8" fill="#FFFFFF" opacity=".25"/></pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#352D35" flood-opacity=".16"/></filter>
+    </defs>
+      <rect width="800" height="500" rx="28" fill="url(#bg)"/>
       <circle cx="90" cy="80" r="45" fill="#FFFFFF" opacity=".22"/><circle cx="720" cy="65" r="65" fill="#FFFFFF" opacity=".18"/>
-      <g transform="translate(270 140) scale(0.9)">
+      <g filter="url(#shadow)" transform="translate(270 140) scale(0.9)">
       <ellipse cx="0" cy="110" rx="66" ry="72" fill="#9A7458"/>
       <circle cx="-52" cy="-45" r="28" fill="#9A7458"/><circle cx="52" cy="-45" r="28" fill="#9A7458"/>
       <circle cx="-52" cy="-45" r="15" fill="#D9B79E"/><circle cx="52" cy="-45" r="15" fill="#D9B79E"/>
@@ -12,9 +16,9 @@
       <g fill="none" stroke="#352D35" stroke-width="5" stroke-linecap="round"><path d="M-10 13q10-7 20 0"/></g>
       <ellipse cx="-58" cy="105" rx="20" ry="55" fill="#9A7458" transform="rotate(25 -58 105)"/>
       <ellipse cx="58" cy="105" rx="20" ry="55" fill="#9A7458" transform="rotate(-25 58 105)"/>
-    </g><rect x="65" y="340" width="670" height="32" rx="16" fill="#C88E68"/><path d="M120 370l-25 110M680 370l25 110" stroke="#8F654C" stroke-width="24"/><g transform="translate(530 345) scale(0.85)"><g transform="rotate(65)">
+    </g><rect x="65" y="340" width="670" height="32" rx="16" fill="#C88E68"/><path d="M120 370l-25 110M680 370l25 110" stroke="#8F654C" stroke-width="24"/><g filter="url(#shadow)" transform="translate(530 345) scale(0.85)"><g filter="url(#shadow)" transform="rotate(65)">
       <path d="M-48-35H40L32 38Q0 65-32 38Z" fill="#658EB5"/>
       <path d="M40-20h18q32 0 24 30T32 30" fill="none" stroke="#658EB5" stroke-width="12"/>
       <ellipse cx="-4" cy="-35" rx="44" ry="12" fill="#F8F2E7"/><ellipse cx="-4" cy="-34" rx="35" ry="8" fill="#9B6549"/>
     </g></g><path d="M500 370q100-45 170 30-90 55-190 10Z" fill="#9B6549" opacity=".75"/><path d="M610 320q20 30 0 45M645 300q20 30 0 45" fill="none" stroke="#658EB5" stroke-width="9" stroke-linecap="round"/>
-    </svg>
+    <rect width="800" height="500" rx="28" fill="url(#grain)" pointer-events="none"/></svg>

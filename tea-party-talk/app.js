@@ -183,13 +183,11 @@ class TeaPartyTalk {
 
   renderCard() {
     const card = this.currentCard;
-    this.cardImage.src = `assets/${card.id}.svg`;
+    this.cardImage.src = `assets/${card.id}.${card.imageType || 'svg'}`;
     this.cardImage.alt = card.alt;
     this.categoryBadge.textContent = card.categoryLabel;
-    this.questionText.textContent = card.question;
     this.parentTip.textContent = card.tip;
-    const total = this.seenCount + this.remainingCards.length;
-    this.cardPosition.textContent = `Card ${this.seenCount} of ${total}`;
+    this.totalCards = this.seenCount + this.remainingCards.length;
     this.renderTurns();
   }
 
@@ -208,7 +206,9 @@ class TeaPartyTalk {
     });
     const player = this.activePlayers[this.turnIndex];
     this.currentTurn.textContent = `${player.name}’s turn`;
-    this.nextTurnBtn.textContent = this.turnIndex === this.activePlayers.length - 1 ? 'Next card' : 'Next turn';
+    this.questionText.textContent = this.currentCard.prompts[this.turnIndex];
+    this.cardPosition.textContent = `Scene ${this.seenCount} of ${this.totalCards} · Question ${this.turnIndex + 1} of ${this.activePlayers.length}`;
+    this.nextTurnBtn.textContent = this.turnIndex === this.activePlayers.length - 1 ? 'Next scene' : 'Next turn';
   }
 
   advanceTurn() {

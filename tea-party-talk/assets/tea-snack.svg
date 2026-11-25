@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img">
-      <rect width="800" height="500" rx="28" fill="#E4EEF7"/>
-      <circle cx="90" cy="80" r="45" fill="#FFFFFF" opacity=".22"/><circle cx="720" cy="65" r="65" fill="#FFFFFF" opacity=".18"/>
-      <path d="M170 210q230-170 460 0" fill="none" stroke="#A77A52" stroke-width="25"/><path d="M140 210h520l-55 220H195Z" fill="#C89D68"/><path d="M170 250h450M160 310h430M250 210v210M350 210v220M450 210v220M550 210v210" stroke="#A77A52" stroke-width="12"/><path d="M230 180q20-90 100-45t80 70Z" fill="#E5B867"/><rect x="420" y="70" width="85" height="160" rx="15" fill="#F7F4E8"/><path d="M420 110h85" stroke="#658EB5" stroke-width="25"/><circle cx="340" cy="190" r="38" fill="#C95C5C"/><circle cx="390" cy="200" r="35" fill="#C95C5C"/>
-    </svg>

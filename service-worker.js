@@ -45,21 +45,21 @@ const ASSETS = [
   './tea-party-talk/assets/red-cup.svg',
   './tea-party-talk/assets/apple-choice.svg',
   './tea-party-talk/assets/hiding-cat.svg',
-  './tea-party-talk/assets/tea-snack.svg',
-  './tea-party-talk/assets/rainy-walk.svg',
+  './tea-party-talk/assets/tea-snack.jpg',
+  './tea-party-talk/assets/rainy-walk.jpg',
   './tea-party-talk/assets/field-leaf.svg',
   './tea-party-talk/assets/spilled-tea.svg',
   './tea-party-talk/assets/crying-bear.svg',
-  './tea-party-talk/assets/pink-balloon.svg',
-  './tea-party-talk/assets/broken-tower.svg',
+  './tea-party-talk/assets/pink-balloon.jpg',
+  './tea-party-talk/assets/broken-tower.jpg',
   './tea-party-talk/assets/new-friend.svg',
-  './tea-party-talk/assets/sharing-cookies.svg',
+  './tea-party-talk/assets/sharing-cookies.jpg',
   './tea-party-talk/assets/magic-animal.svg',
   './tea-party-talk/assets/flying-cup.svg',
   './tea-party-talk/assets/tiny-door.svg',
   './tea-party-talk/assets/moon-picnic.svg',
   './tea-party-talk/assets/talking-teddy.svg',
-  './tea-party-talk/assets/cloud-shapes.svg'
+  './tea-party-talk/assets/cloud-shapes.jpg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,11 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img">
-      <rect width="800" height="500" rx="28" fill="#E4EFD9"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img"><defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eaf3e2"/><stop offset="1" stop-color="#c9d2bf"/></linearGradient>
+      <pattern id="grain" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.2" fill="#6B5644" opacity=".08"/><circle cx="17" cy="15" r=".8" fill="#FFFFFF" opacity=".25"/></pattern>
+      <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#352D35" flood-opacity=".16"/></filter>
+    </defs>
+      <rect width="800" height="500" rx="28" fill="url(#bg)"/>
       <circle cx="90" cy="80" r="45" fill="#FFFFFF" opacity=".22"/><circle cx="720" cy="65" r="65" fill="#FFFFFF" opacity=".18"/>
-      <path d="M0 400q200-120 400-40t400 0v140H0Z" fill="#B7D1A4"/><g transform="translate(260 190) scale(0.75)">
+      <path d="M0 400q200-120 400-40t400 0v140H0Z" fill="#B7D1A4"/><g filter="url(#shadow)" transform="translate(260 190) scale(0.75)">
       <path d="M-55 185-40 85H40L55 185Z" fill="#658EB5"/>
       <circle r="66" fill="#C88E68"/><path d="M-65-5Q-72-80 0-78T65-5Q30-40 0-32T-65-5" fill="#4A3534"/>
       <circle cx="-23" cy="0" r="6" fill="#352D35"/><circle cx="23" cy="0" r="6" fill="#352D35"/>
       <path d="M-12 25q12 12 24 0" fill="none" stroke="#352D35" stroke-width="5" stroke-linecap="round"/>
       <path d="M-38 100-100 150M38 100 95 145" stroke="#C88E68" stroke-width="24" stroke-linecap="round"/>
     </g><path d="M520 330q70-100 125-15-55 100-125 15Z" fill="#C95C5C"/><path d="M520 330l110-20" stroke="#8C5548" stroke-width="5"/><ellipse cx="655" cy="400" rx="50" ry="22" fill="#9A7458"/><circle cx="620" cy="385" r="30" fill="#C89D68"/><circle cx="615" cy="385" r="15" fill="none" stroke="#9A7458" stroke-width="5"/>
-    </svg>
+    <rect width="800" height="500" rx="28" fill="url(#grain)" pointer-events="none"/></svg>
