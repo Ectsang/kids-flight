@@ -35,7 +35,31 @@ const ASSETS = [
   './sky-pilot/index.html',
   './sky-pilot/styles.css',
   './sky-pilot/app.js',
-  './sky-pilot/manifest.webmanifest'
+  './sky-pilot/manifest.webmanifest',
+  './tea-party-talk/',
+  './tea-party-talk/index.html',
+  './tea-party-talk/styles.css',
+  './tea-party-talk/cards.js',
+  './tea-party-talk/app.js',
+  './tea-party-talk/manifest.webmanifest',
+  './tea-party-talk/assets/red-cup.svg',
+  './tea-party-talk/assets/apple-choice.svg',
+  './tea-party-talk/assets/hiding-cat.svg',
+  './tea-party-talk/assets/tea-snack.svg',
+  './tea-party-talk/assets/rainy-walk.svg',
+  './tea-party-talk/assets/field-leaf.svg',
+  './tea-party-talk/assets/spilled-tea.svg',
+  './tea-party-talk/assets/crying-bear.svg',
+  './tea-party-talk/assets/pink-balloon.svg',
+  './tea-party-talk/assets/broken-tower.svg',
+  './tea-party-talk/assets/new-friend.svg',
+  './tea-party-talk/assets/sharing-cookies.svg',
+  './tea-party-talk/assets/magic-animal.svg',
+  './tea-party-talk/assets/flying-cup.svg',
+  './tea-party-talk/assets/tiny-door.svg',
+  './tea-party-talk/assets/moon-picnic.svg',
+  './tea-party-talk/assets/talking-teddy.svg',
+  './tea-party-talk/assets/cloud-shapes.svg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Static HTML/CSS/JS collection of 6 offline-first kids games. No build system, no npm, no tests.
+Static HTML/CSS/JS collection of 7 offline-first kids games. No build system, no npm, no tests.
 
 ## Commands
 
@@ -34,5 +34,6 @@ Every game and the root launcher is an installable PWA with its own `service-wor
 | `bubble-pop-tower/` | Ages 4+: bubble drop physics puzzle |
 | `number-cruncher/` | Ages 8+: mental math |
 | `mind-grid/` | Ages 6+: memory pattern game |
+| `tea-party-talk/` | Ages 3+: illustrated conversation cards and turn-taking |
 
 Each game folder is self-contained with its own assets, styles, and service worker (for offline PWA).

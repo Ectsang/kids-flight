@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img">
+      <rect width="800" height="500" rx="28" fill="#E8E1F1"/>
+      <circle cx="90" cy="80" r="45" fill="#FFFFFF" opacity=".22"/><circle cx="720" cy="65" r="65" fill="#FFFFFF" opacity=".18"/>
+      <g transform="translate(480 145) scale(0.75)">
+      <ellipse cx="0" cy="110" rx="66" ry="72" fill="#B89373"/>
+      <circle cx="-52" cy="-45" r="28" fill="#B89373"/><circle cx="52" cy="-45" r="28" fill="#B89373"/>
+      <circle cx="-52" cy="-45" r="15" fill="#D9B79E"/><circle cx="52" cy="-45" r="15" fill="#D9B79E"/>
+      <circle cy="0" r="72" fill="#B89373"/>
+      <ellipse cy="25" rx="35" ry="28" fill="#EBD2BA"/>
+      <circle cx="-25" cy="-8" r="6" fill="#352D35"/><circle cx="25" cy="-8" r="6" fill="#352D35"/>
+      <path d="M-8 10h16l-8 9Z" fill="#352D35"/>
+      <g fill="none" stroke="#352D35" stroke-width="5" stroke-linecap="round"><path d="M-12 18q12-14 24 0"/></g>
+      <ellipse cx="-58" cy="105" rx="20" ry="55" fill="#B89373" transform="rotate(25 -58 105)"/>
+      <ellipse cx="58" cy="105" rx="20" ry="55" fill="#B89373" transform="rotate(-25 58 105)"/>
+    </g><g transform="translate(205 170) scale(0.9)">
+      <ellipse cx="0" cy="110" rx="66" ry="72" fill="#8C6C52"/>
+      <circle cx="-52" cy="-45" r="28" fill="#8C6C52"/><circle cx="52" cy="-45" r="28" fill="#8C6C52"/>
+      <circle cx="-52" cy="-45" r="15" fill="#D9B79E"/><circle cx="52" cy="-45" r="15" fill="#D9B79E"/>
+      <circle cy="0" r="72" fill="#8C6C52"/>
+      <ellipse cy="25" rx="35" ry="28" fill="#EBD2BA"/>
+      <circle cx="-25" cy="-8" r="6" fill="#352D35"/><circle cx="25" cy="-8" r="6" fill="#352D35"/>
+      <path d="M-8 10h16l-8 9Z" fill="#352D35"/>
+      <g fill="none" stroke="#352D35" stroke-width="5" stroke-linecap="round"><path d="M-10 13q10-7 20 0"/></g>
+      <ellipse cx="-58" cy="105" rx="20" ry="55" fill="#8C6C52" transform="rotate(25 -58 105)"/>
+      <ellipse cx="58" cy="105" rx="20" ry="55" fill="#8C6C52" transform="rotate(-25 58 105)"/>
+    </g><path d="M450 210q-15 35 0 50M510 210q15 35 0 50" fill="none" stroke="#658EB5" stroke-width="8" stroke-linecap="round"/><path d="M300 300q70-70 110 10" fill="none" stroke="#8C6C52" stroke-width="25" stroke-linecap="round"/>
+    </svg>

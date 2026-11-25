@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#D96C57">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Tea Party Talk</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../animal-tap-parade/assets/icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="setup-screen" id="setupScreen" aria-labelledby="setupTitle">
+      <a class="menu-link" href="../">Game menu</a>
+      <div class="setup-card">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 80 80"><path d="M18 28h39v20c0 13-8 21-19 21s-20-8-20-21V28Z" fill="currentColor"/><path d="M57 32h5c11 0 11 17 0 17h-6" fill="none" stroke="currentColor" stroke-width="6"/><path d="M12 69h51" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M29 20c-5-6 5-7 0-13M43 20c-5-6 5-7 0-13" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+        </div>
+        <p class="eyebrow">A conversation game for little talkers</p>
+        <h1 id="setupTitle">Tea Party Talk</h1>
+        <p class="lead">One picture. One question. Everyone gets a turn.</p>
+
+        <fieldset class="player-fieldset">
+          <legend>Who is at the table?</legend>
+          <div class="player-setup-list" id="playerSetupList"></div>
+          <button class="text-button" id="addGuestBtn" type="button">+ Invite another guest</button>
+        </fieldset>
+
+        <label class="deck-label" for="deckSelect">Choose a deck</label>
+        <select id="deckSelect">
+          <option value="all">All 18 cards</option>
+          <option value="easy">Start here — easy answers</option>
+          <option value="feelings">Feelings and friends</option>
+          <option value="imagine">Imagine and tell</option>
+        </select>
+
+        <button class="primary-button start-button" id="startBtn" type="button">Start the tea party</button>
+        <p class="setup-note">Pointing, whispering, Chinese, English, and helping a stuffed animal answer all count.</p>
+      </div>
+    </section>
+
+    <section class="game-screen hidden" id="gameScreen" aria-labelledby="questionText">
+      <header class="game-header">
+        <button class="text-button" id="setupBtn" type="button">Players and decks</button>
+        <span class="card-position" id="cardPosition"></span>
+        <a class="text-button" href="../">Game menu</a>
+      </header>
+
+      <div class="turn-panel">
+        <p class="turn-label">Same card, everyone answers</p>
+        <div class="turn-list" id="turnList" aria-label="Players"></div>
+      </div>
+
+      <article class="talk-card" id="talkCard">
+        <div class="illustration-wrap">
+          <img id="cardImage" src="" alt="" width="800" height="500">
+          <span class="category-badge" id="categoryBadge"></span>
+        </div>
+        <div class="question-panel">
+          <p class="current-turn" id="currentTurn" aria-live="polite"></p>
+          <h2 id="questionText"></h2>
+          <p class="answer-note">Any answer counts. A point, a whisper, or a word is enough.</p>
+          <details class="parent-tip">
+            <summary>Parent tip</summary>
+            <p id="parentTip"></p>
+          </details>
+        </div>
+      </article>
+
+      <div class="wait-area">
+        <button class="secondary-button" id="waitBtn" type="button">Wait 10 seconds</button>
+        <div class="wait-track hidden" id="waitTrack" aria-hidden="true"><div id="waitProgress"></div></div>
+        <span class="wait-status" id="waitStatus" aria-live="polite"></span>
+      </div>
+
+      <div class="game-actions">
+        <button class="primary-button" id="nextTurnBtn" type="button">Next turn</button>
+        <button class="secondary-button" id="anotherCardBtn" type="button">Different card</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="completion-overlay hidden" id="completionOverlay" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+    <div class="completion-card">
+      <h2 id="completionTitle">You finished the deck</h2>
+      <p>Every guest got a turn. Shuffle and play again whenever you like.</p>
+      <button class="primary-button" id="playAgainBtn" type="button">Shuffle again</button>
+      <button class="text-button" id="completionSetupBtn" type="button">Change players or deck</button>
+    </div>
+  </div>
+
+  <script src="cards.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
