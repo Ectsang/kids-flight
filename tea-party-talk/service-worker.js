@@ -1,4 +1,5 @@
-const CACHE_NAME = 'tea-party-talk-@@CACHE_STAMP@@';
+const CACHE_VERSION = '@@CACHE_STAMP@@';
+const CACHE_NAME = `tea-party-talk-${CACHE_VERSION}`;
 const CARD_IDS = [
   'red-cup', 'apple-choice', 'hiding-cat', 'tea-snack', 'rainy-walk', 'field-leaf',
   'spilled-tea', 'crying-bear', 'pink-balloon', 'broken-tower', 'new-friend', 'sharing-cookies',
@@ -19,7 +20,12 @@ const ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
+      .then(cache => Promise.all(ASSETS.map(async asset => {
+        const joiner = asset.includes('?') ? '&' : '?';
+        const response = await fetch(`${asset}${joiner}v=${CACHE_VERSION}`, { cache: 'reload' });
+        if (!response.ok) throw new Error(`Unable to cache ${asset}`);
+        return cache.put(asset, response);
+      })))
       .then(() => self.skipWaiting())
   );
 });
