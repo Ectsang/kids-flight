@@ -106,7 +106,7 @@ const CARDS = [
       'What could Teddy do next?',
       'Who could help Teddy?',
       'What could we use to clean up?',
-      'What could we say to Teddy?',
+      'What comforting words could we offer Teddy?',
       'What could Teddy say to Bunny?',
       'How might Teddy feel after it is clean?'
     ]
@@ -220,7 +220,7 @@ const CARDS = [
       'How does the cup move?',
       'Where should we land?',
       'What should we bring on our trip?',
-      'How will we get home?'
+      'How will our flying cup return home?'
     ]
   },
   {
@@ -264,7 +264,7 @@ const CARDS = [
       'Your teddy can suddenly talk. What does Teddy say first?',
       'Where is Teddy sitting?',
       'Who is listening to Teddy?',
-      'How does the child feel?',
+      'How does the child feel about a talking toy?',
       'What question would you ask Teddy?',
       'What does Teddy like to eat?',
       'What game should we play with Teddy?',

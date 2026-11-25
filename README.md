@@ -14,7 +14,7 @@ Offline-first games for kids to play on flights. Each game is a standalone PWA t
 | [Bubble Pop Tower](bubble-pop-tower/) | 4+ | Physics-based bubble matching puzzle with combos and powerups |
 | [Mind Grid](mind-grid/) | 6+ | Memorize patterns and recreate them! Working memory training |
 | [Number Cruncher](number-cruncher/) | 8+ | Combine numbers to hit the target! Mental math brain training |
-| [Tea Party Talk](tea-party-talk/) | 3+ | Illustrated conversation cards with turn-taking for children, parents, and stuffed animals |
+| [Tea Party Talk](tea-party-talk/) | 3+ | 100 illustrated conversation scenes with unique prompts for every guest |
 
 ## Features
 

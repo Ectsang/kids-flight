@@ -121,6 +121,8 @@ select {
 .start-button { width: 100%; font-size: 1.12rem; }
 .setup-note, .answer-note { color: var(--muted); font-size: .9rem; line-height: 1.5; }
 .setup-note { margin: 20px 0 0; }
+.credits { margin-top: 14px; font-size: .75rem; }
+.credits a { color: var(--muted); }
 .game-screen { max-width: 860px; margin: 0 auto; padding: 12px 14px 36px; }
 .game-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .game-header .text-button { font-size: .86rem; }
