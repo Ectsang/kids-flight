@@ -27,5 +27,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+      - name: Allow Pages artifact metadata to settle
+        run: sleep 5
       - id: deployment
         uses: actions/deploy-pages@v4
