@@ -185,6 +185,9 @@ h2 { margin: 0 0 12px; font-size: clamp(1.55rem, 5vw, 2.35rem); line-height: 1.2
   .game-actions { grid-template-columns: 1fr; }
   .game-header { align-items: flex-start; }
   .card-position { padding-top: 12px; }
+  .turn-list { gap: 6px; }
+  .turn-chip { min-height: 42px; padding: 4px 9px 4px 4px; gap: 5px; font-size: .78rem; }
+  .turn-chip .avatar { width: 30px; height: 30px; font-size: .75rem; }
   .illustration-wrap img { aspect-ratio: 4 / 3; }
   .question-panel { padding: 18px; }
 }
